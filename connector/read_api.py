@@ -6,6 +6,7 @@ Created on Jul 25, 2014
 
 import slumber, settings as s
 from datetime import datetime as dt
+from datetime import timedelta
 
 class ApiWrapper(object):
     def __init__(self):
@@ -40,6 +41,32 @@ class Card(object):
         self.card_type = card_type
         self.value = value
         self.tags = tags
+        self.arch_date_range = self.week_range(archive_date)
+
+    def week_range(self, archive_date):
+        """Find the first/last day of the week for the given day.
+        Assuming weeks start on Sunday and end on Saturday.
+
+        Returns a tuple of ``(start_date, end_date)``.
+
+        """
+        # isocalendar calculates the year, week of the year, and day of the week.
+        # dow is Mon = 1, Sat = 6, Sun = 7
+        year, week, dow = archive_date.isocalendar()
+
+        # Find the first day of the week.
+        if dow == 7:
+            # Since we want to start with Sunday, let's test for that condition.
+            start_date = archive_date
+        else:
+            # Otherwise, subtract `dow` number days to get the first day
+            start_date = archive_date - timedelta(dow)
+
+        # Now, add 6 for the last day of the week (i.e., count up to Saturday)
+        end_date = start_date + timedelta(6)
+
+        return (start_date, end_date)
+
 
 class CardController(object):
     def __init__(self, cards_list):
@@ -57,7 +84,7 @@ class CardController(object):
                 l = [i]
                 d[arch_week_no] = l
 
-        print d
+        return d
 
 
 if __name__ == "__main__":
