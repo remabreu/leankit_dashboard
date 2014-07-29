@@ -5,6 +5,7 @@ Created on Jul 25, 2014
 '''
 
 import slumber, settings as s
+from datetime import datetime as dt
 
 class ApiWrapper(object):
     def __init__(self):
@@ -22,8 +23,8 @@ class ApiWrapper(object):
                 #print lk_card["ReplyText"], lk_card["ReplyCode"]
                 cards_list.append(Card(lk_card["Title"],
                                    lk_card["ExternalCardID"],
-                                   lk_card["CreateDate"],
-                                   lk_card["DateArchived"],
+                                   dt.strptime(lk_card["CreateDate"], "%m/%d/%Y"),
+                                   dt.strptime(lk_card["DateArchived"], "%m/%d/%Y"),
                                    lk_card["TypeName"],
                                    lk_card["ClassOfServiceTitle"],
                                    lk_card["Tags"]))
@@ -45,9 +46,20 @@ class CardController(object):
         self.cards_list = cards_list
 
     def archived_cards_per_week(self):
+        d = {}
+        for i in self.cards_list:
+            arch_week_no = i.archive_date.date().isocalendar()[1]
+            if arch_week_no in d.keys():
+                lst = d[arch_week_no]
+                lst.append(i)
+                d[arch_week_no] = lst
+            else:
+                l = [i]
+                d[arch_week_no] = l
 
+        print d
 
 
 if __name__ == "__main__":
-    print ApiWrapper().create_archived_cards()
-
+    x= ApiWrapper().create_archived_cards()
+    CardController(x).archived_cards_per_week()
