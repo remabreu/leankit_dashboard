@@ -3,7 +3,7 @@ Created on Jul 25, 2014
 
 @author: rodrigoabreu
 '''
-
+from __future__ import division
 import slumber, settings as s
 from datetime import datetime as dt
 from datetime import timedelta
@@ -42,6 +42,7 @@ class Card(object):
         self.value = value
         self.tags = tags
         self.arch_date_range = self.week_range(archive_date)
+        self.lead_time = archive_date - create_date
 
     def week_range(self, archive_date):
         """Find the first/last day of the week for the given day.
@@ -86,7 +87,39 @@ class CardController(object):
 
         return d
 
+    def average_lead_time(self):
+        lt = 0
+        for card in self.cards_list:
+            lt = lt + card.lead_time
+
+        return lt/len(self.cards_list)
+
+    def card_type_average_lead_time(self):
+        d = {}
+        for card in self.cards_list:
+            if card.card_type in d.keys():
+                lt = d[card.card_type][0] + card.lead_time
+                count = d[card.card_type][1] + 1
+                d[card.card_type] = (lt, count)
+            else:
+                d[card.card_type] = (card.lead_time, 1)
+
+        return dict([(k,v[0]/v[1]) for k,v in d.iteritems()])
+
+    def tags_effort(self):
+        d = {}
+        for card in self.cards_list:
+            tags_lst = card.tags.split()
+            for tag in tags_lst:
+                if tag in d.keys():
+                    d[tag] += card.lead_time
+                else:
+                    d[tag] = card.lead_time
+
+        return d
+
+
 
 if __name__ == "__main__":
     x= ApiWrapper().create_archived_cards()
-    CardController(x).archived_cards_per_week()
+    CardController(x).tags_effort()

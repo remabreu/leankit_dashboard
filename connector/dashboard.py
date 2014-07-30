@@ -6,7 +6,7 @@ Created on Jul 29, 2014
 
 from leftronic import Leftronic
 from read_api import CardController, ApiWrapper
-import urllib, pycurl, json
+import pycurl, json
 
 update = Leftronic("yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ")
 c = pycurl.Curl()
