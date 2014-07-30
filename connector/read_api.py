@@ -90,7 +90,7 @@ class CardController(object):
     def average_lead_time(self):
         lt = 0
         for card in self.cards_list:
-            lt = lt + card.lead_time
+            lt = lt + card.lead_time.days
 
         return lt/len(self.cards_list)
 
@@ -98,11 +98,11 @@ class CardController(object):
         d = {}
         for card in self.cards_list:
             if card.card_type in d.keys():
-                lt = d[card.card_type][0] + card.lead_time
+                lt = d[card.card_type][0] + card.lead_time.days
                 count = d[card.card_type][1] + 1
                 d[card.card_type] = (lt, count)
             else:
-                d[card.card_type] = (card.lead_time, 1)
+                d[card.card_type] = (card.lead_time.days, 1)
 
         return dict([(k,v[0]/v[1]) for k,v in d.iteritems()])
 
