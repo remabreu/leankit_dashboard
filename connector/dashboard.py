@@ -15,7 +15,7 @@ c.setopt(c.URL, 'https://www.leftronic.com/customSend/')
 
 
 def initialize():
-    wrapper = ApiWrapper().create_archived_cards()
+    wrapper = ApiWrapper().fetch_archived_cards()
     return CardController(wrapper)
 
 def build_last_week_list(cards_dict):

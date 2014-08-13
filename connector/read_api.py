@@ -7,13 +7,14 @@ from __future__ import division
 import slumber, settings as s
 from datetime import datetime as dt
 from datetime import timedelta
+import simplejson as json
 
 class ApiWrapper(object):
     def __init__(self):
         self.api = slumber.API(s.api_url, auth=(s.user, s.pwd))
 
 
-    def create_archived_cards(self):
+    def fetch_archived_cards(self):
         reply_data_archive = self.api.board(s.j1_board).archive.get()["ReplyData"][0][0]["Lane"]["Cards"]
         cards_list = []
         for i in reply_data_archive:
@@ -22,18 +23,60 @@ class ApiWrapper(object):
             if reply_answer["ReplyCode"] == 200:
                 lk_card = reply_answer["ReplyData"][0]
                 #print lk_card["ReplyText"], lk_card["ReplyCode"]
-                cards_list.append(Card(lk_card["Title"],
+                cards_list.append(Card(lk_card["Id"],
+                                   lk_card["Title"],
                                    lk_card["ExternalCardID"],
                                    dt.strptime(lk_card["CreateDate"], "%m/%d/%Y"),
                                    dt.strptime(lk_card["DateArchived"], "%m/%d/%Y"),
                                    lk_card["TypeName"],
                                    lk_card["ClassOfServiceTitle"],
                                    lk_card["Tags"]))
+#         c = 0
+#         for i in cards_list:
+#             c += 1
+#             print c, i.title
         return cards_list
+
+    def fetch_old_archived_cards(self):
+        search_options = json.dumps('{"searchOptions":{"SearchTerm":"","SearchInBacklog":false,\
+        "SearchInBoard":false,"SearchInRecentArchive":false,"SearchInOldArchive":true,\
+        "SearchAllBoards":false,"IncludeComments":false,"IncludeTags":false,\
+        "IncludeExternalId":false,"IncludeTaskboards":false,"BoardId":"113658644",\
+        "AssignedUserIds":null,"undefined":"Done","AddedAfter":"","AddedBefore":"",\
+        "Page":1,"MaxResults":25,"OrderBy":"CreatedOn","SortOrder":0}}')
+        reply_data = self.api.board("113658644").searchcards.post(search_options)["ReplyData"][0]['Results']
+        cards_list = []
+        #print reply_data
+        for i in reply_data:
+            reply_answer = self.api.board(s.j1_board).getcard(i["Id"]).get()
+            if reply_answer["ReplyCode"] == 200:
+                lk_card = reply_answer["ReplyData"][0]
+                #print lk_card["ReplyText"], lk_card["ReplyCode"]
+                cards_list.append(Card(lk_card["Id"],
+                                       lk_card["Title"],
+                                       lk_card["ExternalCardID"],
+                                       dt.strptime(lk_card["CreateDate"], "%m/%d/%Y"),
+                                       dt.strptime(lk_card["DateArchived"], "%m/%d/%Y"),
+                                       lk_card["TypeName"],
+                                       lk_card["ClassOfServiceTitle"],
+                                       lk_card["Tags"]))
+
+#         c = 0
+#         for i in cards_list:
+#             c += 1
+#             print c, i.title
+        return cards_list
+
+    def merge_archived_lists(self, recent_archive, old_archive):
+        complete_archive = []
+        for i in recent_archive:
+            if i.card_id
+
 
 class Card(object):
     #TODO: use kwargs to create a Card
-    def __init__(self, title, epic, create_date, archive_date, card_type, value, tags):
+    def __init__(self, card_id, title, epic, create_date, archive_date, card_type, value, tags):
+        self.card_id = card_id
         self.title = title
         self.epic = epic
         self.create_date = create_date
@@ -43,6 +86,13 @@ class Card(object):
         self.tags = tags
         self.arch_date_range = self.week_range(archive_date)
         self.lead_time = archive_date - create_date
+
+    def __str__(self):
+        return str(self.card_id, self.epic, self.title)
+
+    def __eq__(self, other):
+        return self.card_id == other.card_id
+
 
     def week_range(self, archive_date):
         """Find the first/last day of the week for the given day.
@@ -121,5 +171,6 @@ class CardController(object):
 
 
 if __name__ == "__main__":
-    x= ApiWrapper().create_archived_cards()
-    CardController(x).tags_effort()
+    x= ApiWrapper().fetch_old_archived_cards()
+    #x= ApiWrapper().fetch_archived_cards()
+    #CardController(x).tags_effort()
