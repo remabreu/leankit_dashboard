@@ -8,6 +8,7 @@ import slumber, settings as s
 from datetime import datetime as dt
 from datetime import timedelta
 import simplejson as json
+import codecs
 
 class ApiWrapper(object):
     def __init__(self):
@@ -70,7 +71,15 @@ class ApiWrapper(object):
     def merge_archived_lists(self, recent_archive, old_archive):
         complete_archive = []
         for i in recent_archive:
-            if i.card_id
+            for j in old_archive:
+                if i == j and i not in complete_archive:
+                    complete_archive.append(i)
+                elif i!= j:
+                    if i not in complete_archive:
+                        complete_archive.append(i)
+                    elif j  not in complete_archive:
+                        complete_archive.append(j)
+        return complete_archive
 
 
 class Card(object):
@@ -90,8 +99,15 @@ class Card(object):
     def __str__(self):
         return str(self.card_id, self.epic, self.title)
 
+#     def __repr__(self, *args, **kwargs):
+#
+#         return unicode(self.title, 'utf-8')
+
     def __eq__(self, other):
         return self.card_id == other.card_id
+
+    def __ne__(self, other):
+        return self.card_id != other.card_id
 
 
     def week_range(self, archive_date):
@@ -171,6 +187,7 @@ class CardController(object):
 
 
 if __name__ == "__main__":
-    x= ApiWrapper().fetch_old_archived_cards()
-    #x= ApiWrapper().fetch_archived_cards()
+    wrapper = ApiWrapper()
+    cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
+                                  wrapper.fetch_old_archived_cards())
     #CardController(x).tags_effort()

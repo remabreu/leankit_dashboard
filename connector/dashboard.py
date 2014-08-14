@@ -7,6 +7,7 @@ Created on Jul 29, 2014
 from leftronic import Leftronic
 from read_api import CardController, ApiWrapper
 import pycurl, simplejson as json
+import datetime
 
 update = Leftronic("yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ")
 c = pycurl.Curl()
@@ -15,8 +16,9 @@ c.setopt(c.URL, 'https://www.leftronic.com/customSend/')
 
 
 def initialize():
-    wrapper = ApiWrapper().fetch_archived_cards()
-    return CardController(wrapper)
+    wrapper = ApiWrapper()
+    return wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
+                                  wrapper.fetch_old_archived_cards())
 
 def build_last_week_list(cards_dict):
     last_week_no = max(cards_dict.keys()) - 1
@@ -30,13 +32,14 @@ def build_archived_by_week_bar_chart(cards_dict):
 
     point_list = []
     #print cards_dict
-    for i in cards_dict.keys():
+    for i in sorted(cards_dict.keys()):
         chart = {}
         start, end = cards_dict[i][0].arch_date_range
         chart["name"] = start.strftime("%d/%m") + ' - ' + end.strftime("%d/%m")
-        print chart["name"]
         chart["value"] = len(cards_dict[i])
-        #chart["color"] = "red"
+        today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
+        if start <= today and end >= today:
+            chart["color"] = "red"
         point_list.append(chart)
 
     points_json = json.dumps(point_list)
@@ -54,9 +57,12 @@ def build_lead_time_table_for_card_type(lt_by_type):
     update.pushTable("type_lead_time", header, rows)
 
 if __name__ == "__main__":
-    wrapper = initialize()
-    cards_dict = wrapper.archived_cards_per_week()
-    build_last_week_list(cards_dict)
+    wrapper = ApiWrapper()
+    archived_cards = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
+                                  wrapper.fetch_old_archived_cards())
+    card_ctrl = CardController(archived_cards)
+    cards_dict = card_ctrl.archived_cards_per_week()
+    #build_last_week_list(cards_dict)
     build_archived_by_week_bar_chart(cards_dict)
-    build_average_lead_time(wrapper.average_lead_time())
-    build_lead_time_table_for_card_type(wrapper.card_type_average_lead_time())
+    build_average_lead_time(card_ctrl.average_lead_time())
+    build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
