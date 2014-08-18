@@ -175,14 +175,27 @@ class CardController(object):
     def tags_effort(self):
         d = {}
         for card in self.cards_list:
-            tags_lst = card.tags.split()
-            for tag in tags_lst:
-                if tag in d.keys():
-                    d[tag] += card.lead_time
-                else:
-                    d[tag] = card.lead_time
+            if card.tags:
+                tags_lst = card.tags.split(',')
+                for tag in tags_lst:
+                    if tag in d.keys():
+                        d[tag] += card.lead_time.days
+                    else:
+                        d[tag] = card.lead_time.days
 
+        #print d
         return d
+
+    def card_types_effort(self):
+        effort_per_card_type_dict = {}
+        for card in self.cards_list:
+            if card.card_type in effort_per_card_type_dict.keys():
+                effort_per_card_type_dict[card.card_type] += card.lead_time.days
+            else:
+                effort_per_card_type_dict[card.card_type] = card.lead_time.days
+
+        #print effort_per_card_type_dict
+        return effort_per_card_type_dict
 
 
 
@@ -190,4 +203,6 @@ if __name__ == "__main__":
     wrapper = ApiWrapper()
     cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
                                   wrapper.fetch_old_archived_cards())
+    #CardController(cards_list).card_types_effort()
+    CardController(cards_list).tags_effort()
     #CardController(x).tags_effort()

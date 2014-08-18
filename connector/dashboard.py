@@ -39,7 +39,8 @@ def build_archived_by_week_bar_chart(cards_dict):
         chart["value"] = len(cards_dict[i])
         today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
         if start <= today and end >= today:
-            chart["color"] = "red"
+            chart["name"] = "Current Week"
+            chart["color"] = "green"
         point_list.append(chart)
 
     points_json = json.dumps(point_list)
@@ -56,6 +57,17 @@ def build_lead_time_table_for_card_type(lt_by_type):
     rows = [[k,v] for k,v in lt_by_type.iteritems()]
     update.pushTable("type_lead_time", header, rows)
 
+def build_pie_chart_effort_card_types(card_type_efforts):
+    update.pushLeaderboard("pie_effort", [{"name": k, "value": v} for \
+                                          k,v in card_type_efforts.iteritems()])
+    print "building pie chart of efforts by card type"
+
+def build_pie_chart_effort_target(card_tags_effort, filter_tags, stream):
+    tags_efforts = [{"name": k, "value": v} for k,v in card_tags_effort.iteritems()\
+                     if k in filter_tags]
+    update.pushLeaderboard(stream, tags_efforts)
+    print "building pie chart of efforts by target"
+
 if __name__ == "__main__":
     wrapper = ApiWrapper()
     archived_cards = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
@@ -63,6 +75,13 @@ if __name__ == "__main__":
     card_ctrl = CardController(archived_cards)
     cards_dict = card_ctrl.archived_cards_per_week()
     #build_last_week_list(cards_dict)
-    build_archived_by_week_bar_chart(cards_dict)
-    build_average_lead_time(card_ctrl.average_lead_time())
-    build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
+    #build_archived_by_week_bar_chart(cards_dict)
+    #build_average_lead_time(card_ctrl.average_lead_time())
+    #build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
+    build_pie_chart_effort_card_types(card_ctrl.card_types_effort())
+    build_pie_chart_effort_target(card_ctrl.tags_effort(),
+                                   ['meta_2014.q3', 'no_target'],
+                                   "pie_effort_targets")
+    build_pie_chart_effort_target(card_ctrl.tags_effort(),
+                                  ['mosaico', 'ego', 'opec_tags', 'feed'],
+                                  "important_tags_effort")
