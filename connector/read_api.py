@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 Created on Jul 25, 2014
 
@@ -81,6 +83,23 @@ class ApiWrapper(object):
                         complete_archive.append(j)
         return complete_archive
 
+    def amount_of_cards(self):
+        reply_data = self.api.boards("113658644").get()["ReplyData"][0]
+        cards_count = {}
+
+        for backlog_lane in reply_data['Backlog']:
+            if backlog_lane['Title'] == 'Next':
+                cards_count['backlog'] = len(backlog_lane['Cards'])
+
+        wip = ['Analise', 'Doing', 'Dev. Done', 'Fixing', 'Waiting for Deploy', 'Fixing Done', u'Validação', 'TO PROD', 'Validation', 'CHG']
+        wip_card_count = 0
+        for lane in reply_data['Lanes']:
+            if lane['Title'] in wip:
+                wip_card_count += len(lane['Cards'])
+
+        cards_count['wip'] = wip_card_count
+
+        return cards_count
 
 class Card(object):
     #TODO: use kwargs to create a Card
@@ -201,8 +220,9 @@ class CardController(object):
 
 if __name__ == "__main__":
     wrapper = ApiWrapper()
-    cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
-                                  wrapper.fetch_old_archived_cards())
+    print wrapper.amount_of_cards()
+    #cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
+    #                              wrapper.fetch_old_archived_cards())
     #CardController(cards_list).card_types_effort()
-    CardController(cards_list).tags_effort()
+    #CardController(cards_list).tags_effort()
     #CardController(x).tags_effort()

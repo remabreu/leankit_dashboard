@@ -74,13 +74,13 @@ if __name__ == "__main__":
                                   wrapper.fetch_old_archived_cards())
     card_ctrl = CardController(archived_cards)
     cards_dict = card_ctrl.archived_cards_per_week()
-    #build_last_week_list(cards_dict)
-    #build_archived_by_week_bar_chart(cards_dict)
-    #build_average_lead_time(card_ctrl.average_lead_time())
-    #build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
+    build_last_week_list(cards_dict)
+    build_archived_by_week_bar_chart(cards_dict)
+    build_average_lead_time(card_ctrl.average_lead_time())
+    build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
     build_pie_chart_effort_card_types(card_ctrl.card_types_effort())
     build_pie_chart_effort_target(card_ctrl.tags_effort(),
-                                   ['meta_2014.q3', 'no_target'],
+                                   ['meta_2014.q4', 'no_target.2014.q4'],
                                    "pie_effort_targets")
     build_pie_chart_effort_target(card_ctrl.tags_effort(),
                                   ['mosaico', 'ego', 'opec_tags', 'feed'],
