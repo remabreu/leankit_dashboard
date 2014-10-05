@@ -68,20 +68,36 @@ def build_pie_chart_effort_target(card_tags_effort, filter_tags, stream):
     update.pushLeaderboard(stream, tags_efforts)
     print "building pie chart of efforts by target"
 
+def build_backlog_wip_chart(backlog_wip_count):
+    update.pushNumber("line_wip", backlog_wip_count['wip'])
+    update.pushNumber("line_backlog", backlog_wip_count['backlog'])
+#    import random, time
+#     for i in range(30):
+#         back_number = random.randrange(0, 101, 2)
+#         wip_number = random.randrange(0, 101, 2)
+#         update.pushNumber("line_wip", wip_number)
+#         update.pushNumber("line_backlog", back_number)
+#         time.sleep(3)
+
+
+
+
 if __name__ == "__main__":
-    wrapper = ApiWrapper()
-    archived_cards = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
-                                  wrapper.fetch_old_archived_cards())
-    card_ctrl = CardController(archived_cards)
-    cards_dict = card_ctrl.archived_cards_per_week()
-    build_last_week_list(cards_dict)
-    build_archived_by_week_bar_chart(cards_dict)
-    build_average_lead_time(card_ctrl.average_lead_time())
-    build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
-    build_pie_chart_effort_card_types(card_ctrl.card_types_effort())
-    build_pie_chart_effort_target(card_ctrl.tags_effort(),
-                                   ['meta_2014.q4', 'no_target.2014.q4'],
-                                   "pie_effort_targets")
-    build_pie_chart_effort_target(card_ctrl.tags_effort(),
-                                  ['mosaico', 'ego', 'opec_tags', 'feed'],
-                                  "important_tags_effort")
+#    wrapper = ApiWrapper()
+#     archived_cards = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
+#                                   wrapper.fetch_old_archived_cards())
+#     card_ctrl = CardController(archived_cards)
+#     cards_dict = card_ctrl.archived_cards_per_week()
+#     build_last_week_list(cards_dict)
+#     build_archived_by_week_bar_chart(cards_dict)
+#     build_average_lead_time(card_ctrl.average_lead_time())
+#     build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
+#     build_pie_chart_effort_card_types(card_ctrl.card_types_effort())
+#     build_pie_chart_effort_target(card_ctrl.tags_effort(),
+#                                    ['meta_2014.q4', 'no_target.2014.q4'],
+#                                    "pie_effort_targets")
+#     build_pie_chart_effort_target(card_ctrl.tags_effort(),
+#                                   ['mosaico', 'ego', 'opec_tags', 'feed'],
+#                                   "important_tags_effort")
+    build_backlog_wip_chart()
+

@@ -59,14 +59,16 @@ if __name__ == "__main__":
     l1 = [A(1), A(2), A(3)]
     l2 = [A(1), A(3), A(4), A(6)]
 
-    s1 = set(l1)
-    s2 = set(l2)
+    print sum(x.a for x in l2)
 
-    v = l1.append(l2)
-    for i in l1:
-        print i
+#     s1 = set(l1)
+#     s2 = set(l2)
+#
+#     v = l1.append(l2)
+#     for i in l1:
+#         print i
 
-    
+
 #     l = filter(lambda x: x.a,l1)
 #     print l(l1)
 
