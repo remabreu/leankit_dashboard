@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import simplejson as json
 
 j1_board = "113658644"

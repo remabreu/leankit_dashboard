@@ -5,7 +5,8 @@ Created on Jul 29, 2014
 '''
 
 from leftronic import Leftronic
-from read_api import CardController, ApiWrapper
+from read_api import ApiWrapper
+#from controller import CardController
 import pycurl, simplejson as json
 import datetime
 

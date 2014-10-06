@@ -74,6 +74,9 @@ class CardController(object):
 if __name__ == "__main__":
     wrapper = ApiWrapper()
     wip = wrapper.fetch_backlog_wip_cards()
+    print CardController(None).backlog_wip_card_count(wrapper.backlog_cards_list,
+                                                 wip)
+    print CardController(None).task_progression(wip)
     #print backlog_wip_card_count(wrapper.backlog_cards_list, wip)
     #cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
     #                              wrapper.fetch_old_archived_cards())

@@ -1,8 +1,10 @@
 
 class A(object):
 
-    def __init__(self, a):
-        self.a = a
+    def __init__(self, **kwargs):
+        for k,v in kwargs.iteritems():
+            self.__setattr__(k,v)
+        #self.a = a
 
     def __eq__(self, other):
         return self.a == other.a

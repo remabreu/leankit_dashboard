@@ -49,11 +49,13 @@ class ApiWrapper(object):
 
         for backlog_lane in reply_data['Backlog']:
             if backlog_lane['Title'] == 'Next':
+                #print type(backlog_lane['Cards'])
                 self.backlog_cards_list = backlog_lane['Cards']
+                print len(self.backlog_cards_list)
 
         wip_card_list = []
         for lane in reply_data['Lanes']:
-            if lane['Title'] in s.wip and len(lane['Cards']) > 0:
+            if lane['Title'] in s.work_wip and len(lane['Cards']) > 0:
                 cards = lane['Cards']
                 for card in cards:
                     reply_answer = self.api.board(s.j1_board).getcard(card["Id"]).get()
@@ -63,19 +65,23 @@ class ApiWrapper(object):
         return wip_card_list
 
     def get_lk_card(self, lk_card):
-        return Card(lk_card["Id"],
+        return Card(id = lk_card["Id"],
                  title = lk_card["Title"],
                  epic = lk_card["ExternalCardID"],
                  create_date = dt.strptime(lk_card["CreateDate"], "%m/%d/%Y"),
-                 archive_date=dt.strptime(lk_card["DateArchived"], "%m/%d/%Y"),
-                 card_type=lk_card["TypeName"],
-                 value=lk_card["ClassOfServiceTitle"],
-                 tags=lk_card["Tags"],
-                 completed_tasks=lk_card["TaskBoardCompletedCardCount"],
-                 total_tasks=lk_card["TaskBoardTotalCards"])
+                 archive_date = (dt.strptime(lk_card["DateArchived"], "%m/%d/%Y")\
+                               if lk_card["DateArchived"] else None),
+                 card_type = lk_card["TypeName"],
+                 value = lk_card["ClassOfServiceTitle"],
+                 tags = lk_card["Tags"],
+                 completed_tasks = lk_card["TaskBoardCompletedCardCount"],
+                 total_tasks = lk_card["TaskBoardTotalCards"])
 
 class Card(object):
     def __init__(self, **kwargs):
+        for k,v in kwargs.iteritems():
+            self.__setattr__(k,v)
+
         if kwargs['archive_date']:
             self.arch_date_range = self.week_range(kwargs['archive_date'])
             self.lead_time = kwargs['archive_date'] - kwargs['create_date']
