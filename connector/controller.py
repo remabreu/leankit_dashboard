@@ -1,4 +1,5 @@
 from read_api import ApiWrapper
+import datetime
 
 
 class CardController(object):
@@ -70,6 +71,20 @@ class CardController(object):
                                  for wip_card in wip_cards_list),
                 'total_completed_tasks' : sum(wip_card.completed_tasks\
                                  for wip_card in wip_cards_list)}
+
+    def wip_days(self, wip_cards_list):
+        old_cards_list = []
+        old_cards_dict = {}
+        today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
+        for card in wip_cards_list:
+            date_diff = today - card.last_move_date
+            if date_diff > datetime.timedelta(days=4):
+                old_cards_dict['card_title'] = card.title
+                old_cards_dict['days'] = date_diff
+                old_cards_dict['lane_title'] = card.lane_title
+                old_cards_list.append(old_cards_dict)
+
+        return old_cards_list
 
 if __name__ == "__main__":
     wrapper = ApiWrapper()

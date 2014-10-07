@@ -49,7 +49,6 @@ class ApiWrapper(object):
 
         for backlog_lane in reply_data['Backlog']:
             if backlog_lane['Title'] == 'Next':
-                #print type(backlog_lane['Cards'])
                 self.backlog_cards_list = backlog_lane['Cards']
                 print len(self.backlog_cards_list)
 
@@ -67,10 +66,13 @@ class ApiWrapper(object):
     def get_lk_card(self, lk_card):
         return Card(id = lk_card["Id"],
                  title = lk_card["Title"],
+                 lane_title = lk_card["LaneTitle"],
                  epic = lk_card["ExternalCardID"],
                  create_date = dt.strptime(lk_card["CreateDate"], "%m/%d/%Y"),
-                 archive_date = (dt.strptime(lk_card["DateArchived"], "%m/%d/%Y")\
-                               if lk_card["DateArchived"] else None),
+                 archive_date = dt.strptime(lk_card["DateArchived"], "%m/%d/%Y")\
+                               if lk_card["DateArchived"] else None,
+                 last_move_date = dt.strptime(lk_card["LastMove"].split(" ")[0],\
+                                               "%m/%d/%Y"),
                  card_type = lk_card["TypeName"],
                  value = lk_card["ClassOfServiceTitle"],
                  tags = lk_card["Tags"],
@@ -109,7 +111,8 @@ class Card(object):
         """
         # isocalendar calculates the year, week of the year, and day of the week.
         # dow is Mon = 1, Sat = 6, Sun = 7
-        dow = archive_date.isocalendar()
+        #year, week_no,
+        dow = archive_date.isocalendar()[2]
 
         # Find the first day of the week.
         if dow == 7:
