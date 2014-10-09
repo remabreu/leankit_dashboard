@@ -88,18 +88,18 @@ class Card(object):
             self.arch_date_range = self.week_range(kwargs['archive_date'])
             self.lead_time = kwargs['archive_date'] - kwargs['create_date']
 
-#     def __str__(self):
-#         return str(self.card_id, self.epic, self.title)
+    def __str__(self):
+        return str(self.id, self.epic, self.title)
+
+#     def __repr__(self, *args, **kwargs):
 #
-# #     def __repr__(self, *args, **kwargs):
-# #
-# #         return unicode(self.title, 'utf-8')
-#
-#     def __eq__(self, other):
-#         return self.card_id == other.card_id
-#
-#     def __ne__(self, other):
-#         return self.card_id != other.card_id
+#         return unicode(self.title, 'utf-8')
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __ne__(self, other):
+        return self.id != other.id
 
 
     def week_range(self, archive_date):

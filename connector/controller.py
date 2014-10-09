@@ -78,7 +78,7 @@ class CardController(object):
         today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
         for card in wip_cards_list:
             date_diff = today - card.last_move_date
-            if date_diff > datetime.timedelta(days=4):
+            if date_diff >= datetime.timedelta(days=1):
                 old_cards_dict['card_title'] = card.title
                 old_cards_dict['days'] = date_diff
                 old_cards_dict['lane_title'] = card.lane_title

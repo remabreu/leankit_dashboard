@@ -32,21 +32,25 @@ def build_archived_by_week_bar_chart(cards_dict):
     for i in sorted(cards_dict.keys()):
         chart = {}
         start, end = cards_dict[i][0].arch_date_range
-        chart["name"] = start.strftime("%d/%m") + ' - ' + end.strftime("%d/%m")
-        chart["value"] = len(cards_dict[i])
-        cards_sum += len(cards_dict[i])
         today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-        if start <= today and end >= today:
-            chart["name"] = "Current Week"
-            chart["color"] = "green"
-            flag = True
-        point_list.append(chart)
+        six_weeks = today - datetime.timedelta(days=46)
+        if start > six_weeks:
+            chart["name"] = start.strftime("%d/%m") + ' - ' + end.strftime("%d/%m")
+            chart["value"] = len(cards_dict[i])
+            cards_sum += len(cards_dict[i])
+            #today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
+            if start <= today and end >= today:
+                chart["name"] = "Current Week"
+                chart["color"] = "green"
+                flag = True
+            point_list.append(chart)
 
     if not flag:
         current = {}
         current["name"] = "Current Week"
         current["value"] = 0
         point_list.append(current)
+
 
     points_json = json.dumps(point_list)
     c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",'+\
