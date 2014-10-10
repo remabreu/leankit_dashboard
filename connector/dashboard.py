@@ -4,6 +4,7 @@ from read_api import ApiWrapper
 from controller import CardController
 import pycurl, simplejson as json
 import datetime
+from isoweek import Week
 
 update = Leftronic("yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ")
 c = pycurl.Curl()
@@ -25,34 +26,20 @@ def build_last_week_list(cards_dict):
     update.pushList("delivered_last_week", list_array)
 
 def build_archived_by_week_bar_chart(cards_dict):
-    point_list = []
-    #print cards_dict
-    flag = False
+    points_list = []
     cards_sum = 0
-    for i in sorted(cards_dict.keys()):
+    for arch_week_no in sorted(cards_dict.keys()):
         chart = {}
-        start, end = cards_dict[i][0].arch_date_range
-        today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-        six_weeks = today - datetime.timedelta(days=46)
-        if start > six_weeks:
-            chart["name"] = start.strftime("%d/%m") + ' - ' + end.strftime("%d/%m")
-            chart["value"] = len(cards_dict[i])
-            cards_sum += len(cards_dict[i])
-            #today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-            if start <= today and end >= today:
-                chart["name"] = "Current Week"
-                chart["color"] = "green"
-                flag = True
-            point_list.append(chart)
+        chart["name"] = arch_week_no.monday().strftime("%d/%m") + "-" + \
+                            arch_week_no.friday().strftime("%d/%m")
+        chart["value"] = len(cards_dict[arch_week_no])
+        if arch_week_no == Week.thisweek():
+            chart["name"] = "Current"
+            chart["color"] = "green"
+            cards_sum += len(cards_dict[arch_week_no])
+        points_list.append(chart)
 
-    if not flag:
-        current = {}
-        current["name"] = "Current Week"
-        current["value"] = 0
-        point_list.append(current)
-
-
-    points_json = json.dumps(point_list)
+    points_json = json.dumps(points_list)
     c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",'+\
               '"streamName": "delivered_chart", "point": '+\
               '{"chart": '+ points_json + '}}')

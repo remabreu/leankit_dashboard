@@ -1,24 +1,40 @@
 from read_api import ApiWrapper
 import datetime
+from isoweek import Week
 
 
 class CardController(object):
     def __init__(self, cards_list):
         self.cards_list = cards_list
 
-    def archived_cards_per_week(self):
-        d = {}
-        for i in self.cards_list:
-            arch_week_no = i.archive_date.date().isocalendar()[1]
-            if arch_week_no in d.keys():
-                lst = d[arch_week_no]
-                lst.append(i)
-                d[arch_week_no] = lst
-            else:
-                l = [i]
-                d[arch_week_no] = l
+    def get_week_range(self):
+        this_week = Week.thisweek()
+        week_numbers_list = []
+        for i in range(6):
+            week_numbers_list.append(this_week)
+            this_week -= 1
 
-        return d
+        return week_numbers_list
+
+    def archived_cards_per_week(self):
+        archived_cards = {}
+        week_numbers_range = self.get_week_range()
+        for card in self.cards_list:
+            if card.archive_week in week_numbers_range:
+                if card.archive_week in archived_cards.keys():
+                    lst = archived_cards[card.archive_week]
+                    lst.append(card)
+                    archived_cards[card.archive_week] = lst
+                else:
+                    l = [card]
+                    archived_cards[card.archive_week] = l
+
+        no_archived_weeks = list(set(week_numbers_range) - \
+                                        set(archived_cards.keys()))
+        for no_archive_week in no_archived_weeks:
+            archived_cards[no_archive_week] = []
+
+        return archived_cards
 
     def average_lead_time(self):
         lt = 0

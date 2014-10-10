@@ -3,7 +3,8 @@
 from __future__ import division
 import slumber, settings as s
 from datetime import datetime as dt
-from datetime import timedelta
+#from datetime import timedelta
+from isoweek import Week
 
 class ApiWrapper(object):
     def __init__(self):
@@ -85,44 +86,45 @@ class Card(object):
             self.__setattr__(k,v)
 
         if kwargs['archive_date']:
-            self.arch_date_range = self.week_range(kwargs['archive_date'])
+            self.archive_week = Week.withdate(kwargs['archive_date'])
+            #self.arch_date_range = self.week_range(kwargs['archive_date'])
             self.lead_time = kwargs['archive_date'] - kwargs['create_date']
 
-    def __str__(self):
-        return str(self.id, self.epic, self.title)
-
-#     def __repr__(self, *args, **kwargs):
+#     def __str__(self):
+#         return str(self.id, self.epic, self.title)
 #
-#         return unicode(self.title, 'utf-8')
+# #     def __repr__(self, *args, **kwargs):
+# #
+# #         return unicode(self.title, 'utf-8')
+#
+#     def __eq__(self, other):
+#         return self.id == other.id
+#
+#     def __ne__(self, other):
+#         return self.id != other.id
 
-    def __eq__(self, other):
-        return self.id == other.id
 
-    def __ne__(self, other):
-        return self.id != other.id
-
-
-    def week_range(self, archive_date):
-        """Find the first/last day of the week for the given day.
-        Assuming weeks start on Sunday and end on Saturday.
-
-        Returns a tuple of ``(start_date, end_date)``.
-
-        """
-        # isocalendar calculates the year, week of the year, and day of the week.
-        # dow is Mon = 1, Sat = 6, Sun = 7
-        #year, week_no,
-        dow = archive_date.isocalendar()[2]
-
-        # Find the first day of the week.
-        if dow == 7:
-            # Since we want to start with Sunday, let's test for that condition.
-            start_date = archive_date
-        else:
-            # Otherwise, subtract `dow` number days to get the first day
-            start_date = archive_date - timedelta(dow)
-
-        # Now, add 6 for the last day of the week (i.e., count up to Saturday)
-        end_date = start_date + timedelta(6)
-
-        return (start_date, end_date)
+#     def week_range(self, archive_date):
+#         """Find the first/last day of the week for the given day.
+#         Assuming weeks start on Sunday and end on Saturday.
+#
+#         Returns a tuple of ``(start_date, end_date)``.
+#
+#         """
+#         # isocalendar calculates the year, week of the year, and day of the week.
+#         # dow is Mon = 1, Sat = 6, Sun = 7
+#         #year, week_no,
+#         dow = archive_date.isocalendar()[2]
+#
+#         # Find the first day of the week.
+#         if dow == 7:
+#             # Since we want to start with Sunday, let's test for that condition.
+#             start_date = archive_date
+#         else:
+#             # Otherwise, subtract `dow` number days to get the first day
+#             start_date = archive_date - timedelta(dow)
+#
+#         # Now, add 6 for the last day of the week (i.e., count up to Saturday)
+#         end_date = start_date + timedelta(6)
+#
+#         return (start_date, end_date)
