@@ -16,7 +16,7 @@ class CardController(object):
 
         return week_numbers_list
 
-    def archived_cards_per_week(self):
+    def archived_cards_per_week_last_six_weeks(self):
         archived_cards = {}
         week_numbers_range = self.get_week_range()
         for card in self.cards_list:
@@ -28,13 +28,16 @@ class CardController(object):
                 else:
                     l = [card]
                     archived_cards[card.archive_week] = l
-
+        #no card has been archived during this week
         no_archived_weeks = list(set(week_numbers_range) - \
                                         set(archived_cards.keys()))
         for no_archive_week in no_archived_weeks:
             archived_cards[no_archive_week] = []
 
         return archived_cards
+
+    def archived_cards_per_week_current_quarter(self):
+        pass
 
     def average_lead_time(self):
         lt = 0
@@ -78,34 +81,39 @@ class CardController(object):
 
         return effort_per_card_type_dict
 
-    def backlog_wip_card_count(self, backlog_cards_list, wip_cards_list):
-        return {'backlog': len(backlog_cards_list),
-                'wip': len(wip_cards_list)}
+    def wip_card_count(self, wip_cards_list):
+        """
+        :param wip_cards_list: 0-backlog, 1-development, 2-to prod
+        """
+        return {'backlog': len(wip_cards_list[0]),
+                'wip': len(wip_cards_list[1]),
+                'to_prod': len(wip_cards_list[2])}
 
     def task_progression(self, wip_cards_list):
-        return {'total_tasks' : sum(wip_card.total_tasks\
-                                 for wip_card in wip_cards_list),
-                'total_completed_tasks' : sum(wip_card.completed_tasks\
-                                 for wip_card in wip_cards_list)}
+        return {'total_tasks': sum(wip_card.total_tasks
+                                   for wip_card in wip_cards_list[1]),
+                'total_completed_tasks': sum(wip_card.completed_tasks
+                                             for wip_card in wip_cards_list[1])}
 
     def wip_days(self, wip_cards_list):
         old_cards_list = []
         old_cards_dict = {}
         today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-        for card in wip_cards_list:
+        for card in wip_cards_list[1]:
             date_diff = today - card.last_move_date
             if date_diff >= datetime.timedelta(days=1):
-                old_cards_dict['card_title'] = card.title
-                old_cards_dict['days'] = date_diff
-                old_cards_dict['lane_title'] = card.lane_title
-                old_cards_list.append(old_cards_dict)
+                card.wip_days = date_diff
+            else:
+                card.days = 0
+
+            old_cards_list.append(card)
 
         return old_cards_list
 
 if __name__ == "__main__":
     wrapper = ApiWrapper()
-    wip = wrapper.fetch_backlog_wip_cards()
-    print CardController(None).backlog_wip_card_count(wrapper.backlog_cards_list,
+    wip = wrapper.fetch_wip_cards()
+    print CardController(None).wip_card_count(wrapper.backlog_cards_list,
                                                  wip)
     print CardController(None).task_progression(wip)
     #print backlog_wip_card_count(wrapper.backlog_cards_list, wip)
