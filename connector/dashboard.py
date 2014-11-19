@@ -26,7 +26,7 @@ def build_last_week_list(cards_dict):
 
     update.pushList("delivered_last_week", list_array)
 
-def build_archived_by_week_bar_chart(cards_dict):
+def build_archived_by_week_bar_chart(cards_dict, stream_name):
     points_list = []
     cards_sum = 0
     for arch_week_no in sorted(cards_dict.keys()):
@@ -43,7 +43,7 @@ def build_archived_by_week_bar_chart(cards_dict):
 
     points_json = json.dumps(points_list)
     c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",' +
-              '"streamName": "delivered_chart", "point": ' +
+              '"streamName": "'+ stream_name +'", "point": ' +
               '{"chart": '+ points_json + '}}')
     c.perform()
 
@@ -118,8 +118,11 @@ if __name__ == "__main__":
                                    wrapper.fetch_old_archived_cards())
     card_ctrl = CardController(archived_cards)
     cards_dict = card_ctrl.archived_cards_per_week_last_six_weeks()
+    build_archived_by_week_bar_chart(cards_dict, "delivered_chart")
+    cards_dict = card_ctrl.archived_cards_per_week_current_quarter()
 #     build_last_week_list(cards_dict)
-    build_archived_by_week_bar_chart(cards_dict)
+
+    build_archived_by_week_bar_chart(cards_dict, "bar_test")
 #     build_average_lead_time(card_ctrl.average_lead_time())
 #     build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
 #     build_pie_chart_effort_card_types(card_ctrl.card_types_effort())

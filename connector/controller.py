@@ -1,5 +1,5 @@
 from read_api import ApiWrapper
-import datetime
+import datetime, settings as s
 from isoweek import Week
 
 
@@ -7,10 +7,10 @@ class CardController(object):
     def __init__(self, cards_list):
         self.cards_list = cards_list
 
-    def get_week_range(self):
+    def get_week_range(self, start_week):
         this_week = Week.thisweek()
         week_numbers_list = []
-        for i in range(6):
+        for i in range(start_week):
             week_numbers_list.append(this_week)
             this_week -= 1
 
@@ -18,7 +18,7 @@ class CardController(object):
 
     def archived_cards_per_week_last_six_weeks(self):
         archived_cards = {}
-        week_numbers_range = self.get_week_range()
+        week_numbers_range = self.get_week_range(6)
         for card in self.cards_list:
             if card.archive_week in week_numbers_range:
                 if card.archive_week in archived_cards.keys():
@@ -37,7 +37,51 @@ class CardController(object):
         return archived_cards
 
     def archived_cards_per_week_current_quarter(self):
-        pass
+        archived_cards = {}
+        this_week = Week.thisweek()
+        for start_quarter_week in s.quarter_week_numbers:
+            quarter_weeks = this_week.week - start_quarter_week.week
+
+            if this_week > start_quarter_week and quarter_weeks <= 13:
+                week_numbers_range = self.get_week_range(quarter_weeks+1)
+                for card in self.cards_list:
+                    if card.archive_week in week_numbers_range:
+                        if card.archive_week in archived_cards.keys():
+                            lst = archived_cards[card.archive_week]
+                            lst.append(card)
+                            archived_cards[card.archive_week] = lst
+                        else:
+                            l = [card]
+                            archived_cards[card.archive_week] = l
+                #no card has been archived during this week
+                no_archived_weeks = list(set(week_numbers_range) - \
+                                                set(archived_cards.keys()))
+                for no_archive_week in no_archived_weeks:
+                    archived_cards[no_archive_week] = []
+
+        return archived_cards
+
+
+
+
+
+        for card in self.cards_list:
+            if card.archive_week in week_numbers_range:
+                if card.archive_week in archived_cards.keys():
+                    lst = archived_cards[card.archive_week]
+                    lst.append(card)
+                    archived_cards[card.archive_week] = lst
+                else:
+                    l = [card]
+                    archived_cards[card.archive_week] = l
+        #no card has been archived during this week
+        no_archived_weeks = list(set(week_numbers_range) - \
+                                        set(archived_cards.keys()))
+        for no_archive_week in no_archived_weeks:
+            archived_cards[no_archive_week] = []
+
+        return archived_cards
+
 
     def average_lead_time(self):
         lt = 0
@@ -112,13 +156,14 @@ class CardController(object):
 
 if __name__ == "__main__":
     wrapper = ApiWrapper()
-    wip = wrapper.fetch_wip_cards()
-    print CardController(None).wip_card_count(wrapper.backlog_cards_list,
-                                                 wip)
-    print CardController(None).task_progression(wip)
+    #wip = wrapper.fetch_wip_cards()
+    #print CardController(None).wip_card_count(wrapper.backlog_cards_list,
+    #                                             wip)
+    #print CardController(None).task_progression(wip)
     #print backlog_wip_card_count(wrapper.backlog_cards_list, wip)
-    #cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
-    #                              wrapper.fetch_old_archived_cards())
+    cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
+                                              wrapper.fetch_old_archived_cards())
+    CardController(cards_list).archived_cards_per_week_current_quarter()
     #CardController(cards_list).card_types_effort()
     #CardController(cards_list).tags_effort()
     #CardController(x).tags_effort()

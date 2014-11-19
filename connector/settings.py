@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import simplejson as json
 import datetime
+from isoweek import Week
 
 j1_board = "113658644"
 api_url = "http://produtos-globocom.leankit.com/kanban/api/"
@@ -23,7 +24,12 @@ search_options_for_old_archive = json.dumps('{"searchOptions":{"SearchTerm":"",\
         "AddedBefore":"",\
         "Page":1,"MaxResults":25,"OrderBy":"CreatedOn","SortOrder":0}}')
 
-quarter_week_numbers = [datetime.datetime.strptime("1-12", "%d-%m").isocalendar()[1],
-                        datetime.datetime.strptime("1-3", "%d-%m").isocalendar()[1],
-                        datetime.datetime.strptime("1-6", "%d-%m").isocalendar()[1],
-                        datetime.datetime.strptime("1-9", "%d-%m").isocalendar()[1]]
+
+def week_no(y, m, d):
+    quarter_start_date = datetime.date(y, m, d)
+    return Week.withdate(quarter_start_date)
+
+quarter_week_numbers = [week_no(2014, 9, 1), week_no(2014, 12, 1),
+                        week_no(2015, 3, 1), week_no(2015, 6, 1),
+                        week_no(2015, 9, 1)]
+
