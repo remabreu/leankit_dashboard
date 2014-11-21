@@ -15,10 +15,14 @@ development_lane = '127351620'
 
 search_options_for_old_archive = json.dumps('{"searchOptions":{"SearchTerm":"",\
         "SearchInBacklog":false,\
-        "SearchInBoard":false,"SearchInRecentArchive":false,\
+        "SearchInBoard":false,\
+        "SearchInRecentArchive":false,\
         "SearchInOldArchive":true,\
-        "SearchAllBoards":false,"IncludeComments":false,"IncludeTags":false,\
-        "IncludeExternalId":false,"IncludeTaskboards":false,\
+        "SearchAllBoards":false,\
+        "IncludeComments":false,\
+        "IncludeTags":false,\
+        "IncludeExternalId":false,\
+        "IncludeTaskboards":false,\
         "BoardId":"113658644",\
         "AssignedUserIds":null,"undefined":"Done","AddedAfter":"",\
         "AddedBefore":"",\
@@ -33,3 +37,7 @@ quarter_week_numbers = [week_no(2014, 9, 1), week_no(2014, 12, 1),
                         week_no(2015, 3, 1), week_no(2015, 6, 1),
                         week_no(2015, 9, 1)]
 
+quarter_date_ranges = {'Q3.2014': (datetime.date(2014, 6, 1), datetime.date(2014, 8, 31)),
+                       'Q4.2014': (datetime.date(2014, 9, 1), datetime.date(2014, 11, 30)),
+                       'Q1.2015': (datetime.date(2014, 12, 1), datetime.date(2015, 2, 28)),
+                       'Q3.2015': (datetime.date(2015, 3, 1), datetime.date(2014, 5, 31))}

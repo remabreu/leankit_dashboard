@@ -26,7 +26,7 @@ def build_last_week_list(cards_dict):
 
     update.pushList("delivered_last_week", list_array)
 
-def build_archived_by_week_bar_chart(cards_dict, stream_name):
+def build_archived_by_week_bar_chart(cards_dict, stream_name, chart_color):
     points_list = []
     cards_sum = 0
     for arch_week_no in sorted(cards_dict.keys()):
@@ -34,6 +34,7 @@ def build_archived_by_week_bar_chart(cards_dict, stream_name):
         chart["name"] = arch_week_no.monday().strftime("%d/%m") + "-" + \
                             arch_week_no.friday().strftime("%d/%m")
         chart["value"] = len(cards_dict[arch_week_no])
+        chart["color"] = chart_color
         if arch_week_no == Week.thisweek():
             chart["name"] = "Current"
             chart["color"] = "green"
@@ -43,14 +44,18 @@ def build_archived_by_week_bar_chart(cards_dict, stream_name):
 
     points_json = json.dumps(points_list)
     c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",' +
-              '"streamName": "'+ stream_name +'", "point": ' +
-              '{"chart": '+ points_json + '}}')
+                           '"streamName": "' + stream_name + '", "point": ' +
+                           '{"chart": ' + points_json + '}}')
     c.perform()
+
+    return cards_sum
+
+def cards_per_day(stream_name, cards_sum):
 
     days = len(cards_dict.keys()) * 5
     print "DIAS", days
     print "SUM CARDS", cards_sum
-    update.pushNumber("cards_per_day", cards_sum/days)
+    update.pushNumber(stream_name, cards_sum/days)
 
 def build_average_lead_time(lead_time):
     update.pushNumber("lead_time", lead_time)
@@ -112,17 +117,54 @@ def build_table_wips(old_cards_list):
 
     update.pushTable("wip_days_table", header_list, rows_list)
 
+
+def build_archived_count_vertical_bar(archived_cards_by_week_in_quarter):
+    update.pushNumber("archive_count",
+                      sum([len(x) for x in archived_cards_by_week_in_quarter.values()]))
+
+
+def build_archived_by_quarter_bar_chart(quarters_dict):
+
+    points_list = []
+    for quarter in quarters_dict.keys():
+        chart = {}
+        chart['name'] = quarter
+        chart['color'] = "yellow"
+        chart['value'] = len(quarters_dict[quarter])
+        points_list.append(chart)
+
+    points_json = json.dumps(points_list)
+    c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",' +
+                           '"streamName": "archived_by_quarter_bar_chart", "point": ' +
+                           '{"chart": ' + points_json + '}}')
+    c.perform()
+
+    #update.pushLeaderboard("archived_by_quarter_bar_chart", chart)
+
+
 if __name__ == "__main__":
     wrapper = ApiWrapper()
     archived_cards = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
                                    wrapper.fetch_old_archived_cards())
     card_ctrl = CardController(archived_cards)
-    cards_dict = card_ctrl.archived_cards_per_week_last_six_weeks()
-    build_archived_by_week_bar_chart(cards_dict, "delivered_chart")
-    cards_dict = card_ctrl.archived_cards_per_week_current_quarter()
-#     build_last_week_list(cards_dict)
 
-    build_archived_by_week_bar_chart(cards_dict, "bar_test")
+    cards_dict = card_ctrl.archived_cards_per_week_last_six_weeks()
+    cards_count = build_archived_by_week_bar_chart(cards_dict, "delivered_chart", "purple")
+    cards_per_day("cards_per_day", cards_count)
+
+    cards_dict = card_ctrl.archived_cards_per_week_current_quarter()
+    cards_count = build_archived_by_week_bar_chart(cards_dict,
+                                                   "quarter_throughput_bar_chart", "blue")
+    cards_per_day("cpd_quarter", cards_count)
+    build_archived_count_vertical_bar(cards_dict)
+
+    quarter_cards_dict = card_ctrl.archived_cards_by_quarter()
+    build_archived_by_quarter_bar_chart(quarter_cards_dict)
+
+
+
+
+
 #     build_average_lead_time(card_ctrl.average_lead_time())
 #     build_lead_time_table_for_card_type(card_ctrl.card_type_average_lead_time())
 #     build_pie_chart_effort_card_types(card_ctrl.card_types_effort())

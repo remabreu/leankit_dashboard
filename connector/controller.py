@@ -29,7 +29,7 @@ class CardController(object):
                     l = [card]
                     archived_cards[card.archive_week] = l
         #no card has been archived during this week
-        no_archived_weeks = list(set(week_numbers_range) - \
+        no_archived_weeks = list(set(week_numbers_range) -
                                         set(archived_cards.keys()))
         for no_archive_week in no_archived_weeks:
             archived_cards[no_archive_week] = []
@@ -40,31 +40,12 @@ class CardController(object):
         archived_cards = {}
         this_week = Week.thisweek()
         for start_quarter_week in s.quarter_week_numbers:
-            quarter_weeks = this_week.week - start_quarter_week.week
-
-            if this_week > start_quarter_week and quarter_weeks <= 13:
-                week_numbers_range = self.get_week_range(quarter_weeks+1)
-                for card in self.cards_list:
-                    if card.archive_week in week_numbers_range:
-                        if card.archive_week in archived_cards.keys():
-                            lst = archived_cards[card.archive_week]
-                            lst.append(card)
-                            archived_cards[card.archive_week] = lst
-                        else:
-                            l = [card]
-                            archived_cards[card.archive_week] = l
-                #no card has been archived during this week
-                no_archived_weeks = list(set(week_numbers_range) - \
-                                                set(archived_cards.keys()))
-                for no_archive_week in no_archived_weeks:
-                    archived_cards[no_archive_week] = []
-
-        return archived_cards
-
-
-
-
-
+            if this_week > start_quarter_week:
+                quarter_weeks = this_week.week - start_quarter_week.week
+                if quarter_weeks <= 13:
+                    break
+            #if this_week > start_quarter_week and quarter_weeks <= 13:
+        week_numbers_range = self.get_week_range(quarter_weeks+1)
         for card in self.cards_list:
             if card.archive_week in week_numbers_range:
                 if card.archive_week in archived_cards.keys():
@@ -74,14 +55,36 @@ class CardController(object):
                 else:
                     l = [card]
                     archived_cards[card.archive_week] = l
-        #no card has been archived during this week
-        no_archived_weeks = list(set(week_numbers_range) - \
+        #no card has been archived during the week
+        no_archived_weeks = list(set(week_numbers_range) -
                                         set(archived_cards.keys()))
         for no_archive_week in no_archived_weeks:
             archived_cards[no_archive_week] = []
 
         return archived_cards
 
+    def archived_cards_by_quarter(self):
+        archived_cards = {}
+        for card in self.cards_list:
+            for quarter, quarter_dates in s.quarter_date_ranges.items():
+                if card.archive_date.date() >= quarter_dates[0] and card.archive_date.date() <= quarter_dates[1]:
+                    if quarter in archived_cards.keys():
+                       # print card.title, card.archive_date.date()
+                        archived_cards[quarter].append(card)
+                    else:
+                       # print card.title, card.archive_date.date()
+                        archived_cards[quarter] = [card]
+
+        return archived_cards
+#                else:
+#                    print card.title
+
+        # for x in archived_cards.keys():
+        #     print x + " -> " + str(len(archived_cards[x]))
+        #     count = 0
+        #     for i in archived_cards[x]:
+        #         print count, i.title, i.archive_date.date()
+        #         count += 1
 
     def average_lead_time(self):
         lt = 0
@@ -141,15 +144,10 @@ class CardController(object):
 
     def wip_days(self, wip_cards_list):
         old_cards_list = []
-        old_cards_dict = {}
+
         today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
         for card in wip_cards_list[1]:
-            date_diff = today - card.last_move_date
-            if date_diff >= datetime.timedelta(days=1):
-                card.wip_days = date_diff
-            else:
-                card.days = 0
-
+            card.wip_days = today - card.last_move_date
             old_cards_list.append(card)
 
         return old_cards_list
@@ -163,7 +161,8 @@ if __name__ == "__main__":
     #print backlog_wip_card_count(wrapper.backlog_cards_list, wip)
     cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
                                               wrapper.fetch_old_archived_cards())
-    CardController(cards_list).archived_cards_per_week_current_quarter()
+    CardController(cards_list).archived_cards_by_quarter()
+    #CardController(cards_list).archived_cards_per_week_current_quarter()
     #CardController(cards_list).card_types_effort()
     #CardController(cards_list).tags_effort()
     #CardController(x).tags_effort()
