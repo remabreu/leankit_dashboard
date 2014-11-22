@@ -118,9 +118,9 @@ def build_table_wips(old_cards_list):
     update.pushTable("wip_days_table", header_list, rows_list)
 
 
-def build_archived_count_vertical_bar(archived_cards_by_week_in_quarter):
-    update.pushNumber("archive_count",
-                      sum([len(x) for x in archived_cards_by_week_in_quarter.values()]))
+# def build_archived_count_vertical_bar(archived_cards_by_week_in_quarter):
+#     update.pushNumber("archive_count",
+#                       sum([len(x) for x in archived_cards_by_week_in_quarter.values()]))
 
 
 def build_archived_by_quarter_bar_chart(quarters_dict):
@@ -139,7 +139,40 @@ def build_archived_by_quarter_bar_chart(quarters_dict):
                            '{"chart": ' + points_json + '}}')
     c.perform()
 
+def build_archived_incidents_by_week_bar_chart(archived_incidents):
+    points_list = []
+    for quarter in sorted(archived_incidents.keys()):
+        chart = {}
+        chart['name'] = quarter
+        chart['color'] = "red"
+        chart['value'] = len(archived_incidents[quarter])
+        points_list.append(chart)
+        #print chart['name'], chart['value']
+
+    points_json = json.dumps(points_list)
+    c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",' +
+                           '"streamName": "weekly_incidents_by_chart", "point": ' +
+                           '{"chart": ' + points_json + '}}')
+    c.perform()
+
     #update.pushLeaderboard("archived_by_quarter_bar_chart", chart)
+
+
+def build_archived_incidents_by_quarter_bar_chart(quarter_incidents):
+    points_list = []
+    for quarter in sorted(quarter_incidents.keys()):
+        chart = {}
+        chart['name'] = quarter
+        chart['color'] = "red"
+        chart['value'] = len(quarter_incidents[quarter])
+        points_list.append(chart)
+        print chart['name'], chart['value']
+
+    points_json = json.dumps(points_list)
+    c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",' +
+                           '"streamName": "quarter_incidents_bar_chart", "point": ' +
+                           '{"chart": ' + points_json + '}}')
+    c.perform()
 
 
 if __name__ == "__main__":
@@ -156,10 +189,15 @@ if __name__ == "__main__":
     cards_count = build_archived_by_week_bar_chart(cards_dict,
                                                    "quarter_throughput_bar_chart", "blue")
     cards_per_day("cpd_quarter", cards_count)
-    build_archived_count_vertical_bar(cards_dict)
+    #build_archived_count_vertical_bar(cards_dict)
+    archived_incidents = card_ctrl.archived_incidents_by_week(cards_dict)
+    build_archived_incidents_by_week_bar_chart(archived_incidents)
 
     quarter_cards_dict = card_ctrl.archived_cards_by_quarter()
     build_archived_by_quarter_bar_chart(quarter_cards_dict)
+
+    quarter_incidents = card_ctrl.archived_incidents_by_quarter(quarter_cards_dict)
+    build_archived_incidents_by_quarter_bar_chart(quarter_incidents)
 
 
 

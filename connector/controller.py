@@ -55,6 +55,7 @@ class CardController(object):
                 else:
                     l = [card]
                     archived_cards[card.archive_week] = l
+
         #no card has been archived during the week
         no_archived_weeks = list(set(week_numbers_range) -
                                         set(archived_cards.keys()))
@@ -76,15 +77,45 @@ class CardController(object):
                         archived_cards[quarter] = [card]
 
         return archived_cards
-#                else:
-#                    print card.title
 
-        # for x in archived_cards.keys():
-        #     print x + " -> " + str(len(archived_cards[x]))
-        #     count = 0
-        #     for i in archived_cards[x]:
-        #         print count, i.title, i.archive_date.date()
-        #         count += 1
+    def archived_incidents_by_quarter(self, archived_cards_by_quarter):
+        archived_cards = {}
+        for quarter in archived_cards_by_quarter.keys():
+            for card in archived_cards_by_quarter[quarter]:
+                if card.card_type == "Incidente":
+                    if quarter in archived_cards.keys():
+                       # print card.title, card.archive_date.date()
+                        archived_cards[quarter].append(card)
+                    else:
+                       # print card.title, card.archive_date.date()
+                        archived_cards[quarter] = [card]
+                if quarter not in archived_cards.keys():
+                    archived_cards[quarter] = []
+
+        return archived_cards
+
+
+    def archived_incidents_by_week(self, archived_cards_by_week):
+        archived_incidents = {}
+        for week_number in archived_cards_by_week.keys():
+            if len(archived_cards_by_week[week_number]) > 0:
+                for card in archived_cards_by_week[week_number]:
+                    if card.card_type == "Incidente":
+                        if week_number in archived_incidents.keys():
+                            archived_incidents[week_number].append(card)
+                        else:
+                            archived_incidents[week_number] = [card]
+                if week_number not in archived_incidents.keys():
+                    archived_incidents[week_number] = []
+            else:
+                archived_incidents[week_number] = []
+
+        # for i,j in archived_incidents.items():
+        #     for k in j:
+        #         print i, k.epic, k.title, k.archive_date
+
+        return archived_incidents
+
 
     def average_lead_time(self):
         lt = 0
