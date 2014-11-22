@@ -77,7 +77,7 @@ def build_pie_chart_effort_target(card_tags_effort, filter_tags, stream):
     print "building pie chart of efforts by target"
 
 def build_backlog_wip_toprod_chart(wip_counts):
-    update.pushNumber("line_wip", wip_counts['wip'])
+    update.pushNumber("line_dev", wip_counts['wip'])
     update.pushNumber("line_backlog", wip_counts['backlog'])
     update.pushNumber("line_to_prod", wip_counts['to_prod'])
 
@@ -109,10 +109,10 @@ def build_leaderboard_old_wips(old_cards_list):
 
 
 def build_table_wips(old_cards_list):
-    header_list = ['Card', 'Epic', 'Column', 'Days']
+    header_list = ['Card', 'Epic', 'Days in Lane']
     rows_list = []
     for card in old_cards_list:
-        row = [card.title, card.epic, card.lane_title, card.wip_days.days]
+        row = [card.title, card.epic,  str(card.wip_days.days) + " / " + str(card.lane_title)]
         rows_list.append(row)
 
     update.pushTable("wip_days_table", header_list, rows_list)
@@ -175,6 +175,11 @@ def build_archived_incidents_by_quarter_bar_chart(quarter_incidents):
     c.perform()
 
 
+def build_wip_dial(wip_counts):
+    total_wip = wip_counts['wip'] + wip_counts['backlog'] + wip_counts['to_prod']
+    update.pushNumber("current_wip_dial", total_wip)
+
+
 if __name__ == "__main__":
     wrapper = ApiWrapper()
     archived_cards = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
@@ -214,6 +219,7 @@ if __name__ == "__main__":
 #                                   "important_tags_effort")
     wip_cards_list = wrapper.fetch_wip_cards()
     build_backlog_wip_toprod_chart(card_ctrl.wip_card_count(wip_cards_list))
+    build_wip_dial(card_ctrl.wip_card_count(wip_cards_list))
     build_tasks_line_chart(card_ctrl.task_progression(wip_cards_list))
 #    build_leaderboard_old_wips(card_ctrl.wip_days(wip_cards_list))
     build_table_wips(card_ctrl.wip_days(wip_cards_list))

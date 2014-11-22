@@ -66,9 +66,18 @@ class ApiWrapper(object):
         return wip_card_list
 
     def __fetch_to_prod_cards_list(self, reply_data):
+        cards_list = []
         for lane in reply_data['Lanes']:
-            if lane['Title'] == 'TO PROD':
-                return lane['Cards']
+            if lane['Title'] == 'TO PROD' or \
+                            lane['Title'] == u'Validação' or \
+                            lane['Title'] == 'Waiting for Deploy':
+                print lane['Title'], len(lane['Cards'])
+                cards_list += lane['Cards']
+                #cards_list.append(lane['Cards'])
+
+                print cards_list
+
+        return cards_list
 
     def fetch_wip_cards(self):
         reply_data = self.api.boards(s.j1_board).get()["ReplyData"][0]
