@@ -1,4 +1,4 @@
-from read_api import ApiWrapper
+from read_api import LeanKitWrapper
 import datetime, settings as s
 from isoweek import Week
 
@@ -184,14 +184,14 @@ class CardController(object):
         return old_cards_list
 
 if __name__ == "__main__":
-    wrapper = ApiWrapper()
+    wrapper = LeanKitWrapper()
     #wip = wrapper.fetch_wip_cards()
     #print CardController(None).wip_card_count(wrapper.backlog_cards_list,
     #                                             wip)
     #print CardController(None).task_progression(wip)
     #print backlog_wip_card_count(wrapper.backlog_cards_list, wip)
-    cards_list = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
-                                              wrapper.fetch_old_archived_cards())
+    cards_list = wrapper.merge_archived_lists(wrapper.fetch_recent_archived_cards_list(),
+                                              wrapper.fetch_old_archived_cards_list())
     CardController(cards_list).archived_cards_by_quarter()
     #CardController(cards_list).archived_cards_per_week_current_quarter()
     #CardController(cards_list).card_types_effort()

@@ -1,6 +1,6 @@
 from __future__ import division
 from leftronic import Leftronic
-from read_api import ApiWrapper
+from read_api import LeanKitWrapper
 from controller import CardController
 import pycurl
 import simplejson as json
@@ -14,9 +14,9 @@ c.setopt(c.URL, 'https://www.leftronic.com/customSend/')
 
 
 def initialize():
-    wrapper = ApiWrapper()
-    return wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
-                                  wrapper.fetch_old_archived_cards())
+    wrapper = LeanKitWrapper()
+    return wrapper.merge_archived_lists(wrapper.fetch_recent_archived_cards_list(),
+                                  wrapper.fetch_old_archived_cards_list())
 
 def build_last_week_list(cards_dict):
     last_week_no = max(cards_dict.keys()) - 1
@@ -181,9 +181,9 @@ def build_wip_dial(wip_counts):
 
 
 if __name__ == "__main__":
-    wrapper = ApiWrapper()
-    archived_cards = wrapper.merge_archived_lists(wrapper.fetch_archived_cards(),
-                                   wrapper.fetch_old_archived_cards())
+    wrapper = LeanKitWrapper()
+    archived_cards = wrapper.fetch_archived_cards_list(wrapper.fetch_recent_archived_cards_list(),
+                                   wrapper.fetch_old_archived_cards_list())
     card_ctrl = CardController(archived_cards)
 
     cards_dict = card_ctrl.archived_cards_per_week_last_six_weeks()
