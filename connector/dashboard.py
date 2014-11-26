@@ -182,7 +182,7 @@ def build_wip_dial(wip_counts):
 
 if __name__ == "__main__":
     wrapper = LeanKitWrapper()
-    archived_cards = wrapper.fetch_archived_cards_list(wrapper.fetch_recent_archived_cards_list(),
+    archived_cards = wrapper.get_archived_cards(wrapper.fetch_recent_archived_cards_list(),
                                    wrapper.fetch_old_archived_cards_list())
     card_ctrl = CardController(archived_cards)
 
@@ -217,7 +217,7 @@ if __name__ == "__main__":
 #     build_pie_chart_effort_target(card_ctrl.tags_effort(),
 #                                   ['mosaico', 'ego', 'opec_tags', 'feed'],
 #                                   "important_tags_effort")
-    wip_cards_list = wrapper.fetch_wip_cards()
+    wip_cards_list = wrapper.get_wip_cards()
     build_backlog_wip_toprod_chart(card_ctrl.wip_card_count(wip_cards_list))
     build_wip_dial(card_ctrl.wip_card_count(wip_cards_list))
     build_tasks_line_chart(card_ctrl.task_progression(wip_cards_list))

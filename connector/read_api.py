@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
 import slumber
 import settings as s
 from datetime import datetime as dt
@@ -38,21 +37,18 @@ class LeanKitWrapper(object):
         for lk_card in lk_cards_list:
             reply_answer = self.api.board(s.j1_board).getcard(lk_card["Id"]).get()
             if reply_answer["ReplyCode"] == 200:
-                cards_list.append(self.create_card(reply_answer["ReplyData"][0]))
+                cards_list.append(self.__create_card(reply_answer["ReplyData"][0]))
 
         return cards_list
 
-    def fetch_recent_archived_cards_list(self):
+    def __fetch_recent_archived_cards_list(self):
         lk_reply_data_archive = self.api.board(s.j1_board).archive.get()["ReplyData"][0][0]["Lane"]["Cards"]
         return self.__fetch_cards_list(lk_reply_data_archive)
 
-    def fetch_old_archived_cards_list(self):
+    def __fetch_old_archived_cards_list(self):
         lk_reply_data_old_archive = self.api.board(s.j1_board).searchcards. \
             post(s.search_options_for_old_archive)["ReplyData"][0]['Results']
         return self.__fetch_cards_list(lk_reply_data_old_archive)
-
-    def fetch_archived_cards_list(self, recent_archive_cards_list, old_archive_cards_list):
-        return list(set(recent_archive_cards_list) | set(old_archive_cards_list))
 
     def __fetch_backlog_cards_list(self, reply_data):
         for backlog_lane in reply_data['Backlog']:
@@ -80,16 +76,7 @@ class LeanKitWrapper(object):
 
         return cards_list
 
-    def fetch_wip_cards(self):
-        reply_data = self.api.boards(s.j1_board).get()["ReplyData"][0]
-
-        backlog_cards_list = self.__fetch_backlog_cards_list(reply_data)
-        development_cards_list = self.__fetch_development_cards_list(reply_data)
-        deploy_cards_list = self.__fetch_deploy_cards_list(reply_data)
-
-        return [backlog_cards_list, development_cards_list, deploy_cards_list]
-
-    def create_card(self, lk_card):
+    def __create_card(self, lk_card):
         return Card(id=lk_card["Id"],
                     title=lk_card["Title"],
                     lane_title=lk_card["LaneTitle"],
@@ -105,17 +92,16 @@ class LeanKitWrapper(object):
                     completed_tasks=lk_card["TaskBoardCompletedCardCount"],
                     total_tasks=lk_card["TaskBoardTotalCards"])
 
+    def get_archived_cards(self):
+        recent_archive = self.__fetch_recent_archived_cards_list()
+        old_archive = self.__fetch_old_archived_cards_list()
+        return list(set(recent_archive) | set(old_archive))
 
-if __name__ == "__main__":
-    lk = LeanKitWrapper()
-    recent = lk.fetch_recent_archived_cards_list()
-    print len(recent)
-    for i in recent:
-        print i.id, i.title
-    old = lk.fetch_old_archived_cards_list()
-    print len(old)
-    for i in old:
-        print i.id, i.title
+    def get_wip_cards(self):
+        reply_data = self.api.boards(s.j1_board).get()["ReplyData"][0]
 
-    arch = set(recent) | set(old)
-    print len(list(arch))
+        backlog_cards_list = self.__fetch_backlog_cards_list(reply_data)
+        development_cards_list = self.__fetch_development_cards_list(reply_data)
+        deploy_cards_list = self.__fetch_deploy_cards_list(reply_data)
+
+        return [backlog_cards_list, development_cards_list, deploy_cards_list]

@@ -33,9 +33,9 @@ def week_no(y, m, d):
     quarter_start_date = datetime.date(y, m, d)
     return Week.withdate(quarter_start_date)
 
-quarter_week_numbers = [week_no(2014, 9, 1), week_no(2014, 12, 1),
-                        week_no(2015, 3, 1), week_no(2015, 6, 1),
-                        week_no(2015, 9, 1)]
+quarter_week_numbers = iter([week_no(2014, 9, 1), week_no(2014, 12, 1),
+                            week_no(2015, 3, 1), week_no(2015, 6, 1),
+                            week_no(2015, 9, 1)])
 
 quarter_date_ranges = {'Q3.2014': (datetime.date(2014, 6, 1), datetime.date(2014, 8, 31)),
                        'Q4.2014': (datetime.date(2014, 9, 1), datetime.date(2014, 11, 30)),
