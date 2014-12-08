@@ -28,6 +28,26 @@ class Card(object):
         return hash(self.id)
 
 
+class HistoryCard(object):
+    def __init__(self, history_dict):
+        for event in history_dict:
+            if event['Type'] == 'CardCreationEventDTO':
+                self.creation_date = dt.datetime.strptime(event['DateTime'], '%m/%d/%Y at %H:%M:%S %p')
+                self.creation_lane_title = event['ToLaneTitle']
+            if event['Type'] == 'CardBlockedEventDTO':
+                if event['IsBlocked']:
+                    self.blocked_start_date = event['DateTime']
+                    self.block_reason = event['Comment']
+                elif not event['IsBLocked']:
+                    self.blocked_finish_date = event['DateTime']
+            if event['Type'] == 'CardMoveEventDTO':
+                self.current_lane_title = event['FromLaneTitle']
+                self.next_lane_title = event['ToLaneTitle']
+                self.move_date = event['DateTime']
+
+
+
+
 class LeanKitWrapper(object):
     def __init__(self):
         self.api = slumber.API(s.api_url, auth=(s.user, s.pwd))
