@@ -193,7 +193,7 @@ if __name__ == "__main__":
     cards_dict = card_ctrl.archived_cards_per_week_current_quarter()
     cards_count = build_archived_by_week_bar_chart(cards_dict,
                                                    "quarter_throughput_bar_chart", "blue")
-    cards_per_day("cpd_quarter", cards_count)
+#    cards_per_day("cpd_quarter", cards_count)
     #build_archived_count_vertical_bar(cards_dict)
     archived_incidents = card_ctrl.archived_incidents_by_week(cards_dict)
     build_archived_incidents_by_week_bar_chart(archived_incidents)
