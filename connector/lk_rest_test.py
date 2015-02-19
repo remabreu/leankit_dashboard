@@ -104,38 +104,44 @@ if __name__ == "__main__":
    #          "DEVELOPMENT": ["Analise", "Doing", "VALIDATION"]}
 
     states = ['Backlobg', 'DEVELOPMENT', "VALIDATION", "TO PROD", "JANELA", "Archive"]
-    transitions = [ #Backlog Transitions
-                   {"source": "Backlog",
-                    "dest": "Backlog"},
-                   {"source": "Backlog",
-                    "dest": "DEVELOPMENT"},
-                    #DEV Transitions
-                   {"source": "DEVELOPMENT",
-                    "dest" : "DEVELOPMENT"},
-                   {"source": "DEVELOPMENT",
-                    "dest": "VALIDATION"},
-                   {"source": "DEVELOPMENT",
-                    "dest": "TO PROD"},
-                   {"source": "DEVELOPMENT",
-                    "dest": "JANELA"},
-                   {"source": "DEVELOPMENT",
-                    "dest": "Archive"},
-                   #VALIDATION Transitions
-                   {"source": "VALIDATION",
-                    "dest": "VALIDATION"},
-                    {"source": "VALIDATION",
-                     "dest": "TO PROD"},
-                    {"source": "VALIDATION",
-                     "dest": "JANELA"},
-                    {"source": "VALIDATION",
-                     "dest": "Archive"},
-                    {"source": "TO PROD",
-                     "dest": "TO PROD"},
-                    {"source": "TO PROD",
-                     "dest": "Archive"},
-                    {"source": "TO PROD",
-                     "dest": "JANELA"},
-                    {"source": ""
-                    }
+    transitions = [  # Backlog Transitions
+                     {"source": "Backlog",
+                      "dest": "Backlog"},
+                     {"source": "Backlog",
+                      "dest": "DEVELOPMENT"},
 
-                   ]
+                     #DEV Transitions
+                     {"source": "DEVELOPMENT",
+                      "dest": "DEVELOPMENT"},
+                     {"source": "DEVELOPMENT",
+                      "dest": "VALIDATION"},
+                     {"source": "DEVELOPMENT",
+                      "dest": "TO PROD"},
+                     {"source": "DEVELOPMENT",
+                      "dest": "JANELA"},
+                     {"source": "DEVELOPMENT",
+                      "dest": "Archive"},
+
+                     #VALIDATION Transitions
+                     {"source": "VALIDATION",
+                      "dest": "VALIDATION"},
+                     {"source": "VALIDATION",
+                      "dest": "TO PROD"},
+                     {"source": "VALIDATION",
+                      "dest": "JANELA"},
+                     {"source": "VALIDATION",
+                      "dest": "Archive"},
+
+                     #TO PROD Transitions
+                     {"source": "TO PROD",
+                      "dest": "TO PROD"},
+                     {"source": "TO PROD",
+                      "dest": "Archive"},
+                     {"source": "TO PROD",
+                      "dest": "JANELA"},
+
+                     #JANELA Transitions
+                     {"source": "JANELA",
+                      "dest": "JANELA"},
+                     {"source": "JANELA",
+                      "dest": "Archive"}]
