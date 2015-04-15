@@ -2,6 +2,7 @@ from read_api import LeanKitWrapper
 import datetime as dt
 import settings as s
 from isoweek import Week
+from bisect import bisect
 
 
 class CardController(object):
@@ -65,10 +66,15 @@ class CardController(object):
             #if this_week > start_quarter_week and quarter_weeks <= 13:
         week_numbers_range = self.__get_week_range(quarter_weeks+1)
         for card in self.cards_list:
-            archived_cards.update(self.set_cards(archived_cards,
-                                                 week_numbers_range,
-                                                 card.archive_week, card))
-        # for card in self.cards_list:
+            if card.archive_week in week_numbers_range:
+                cards_in_week = archived_cards.get(card.archive_week, [])
+                cards_in_week.append(card)
+                archived_cards.update({card.archive_week: cards_in_week})
+
+        #     archived_cards.update(self.set_cards(archived_cards,
+        #                                          week_numbers_range,
+        #                                          card.archive_week, card))
+        # # for card in self.cards_list:
         #     if card.archive_week in week_numbers_range:
         #         if card.archive_week in archived_cards.keys():
         #             lst = archived_cards[card.archive_week]
@@ -85,18 +91,24 @@ class CardController(object):
         #     archived_cards[no_archive_week] = []
 
         return archived_cards
+    def __get_quarter(self, month, day):
+        return s.quarters[bisect(s.quarters,(month,day)) - 1][2]
 
     def archived_cards_by_quarter(self):
         archived_cards = {}
         for card in self.cards_list:
-            for quarter, quarter_dates in s.quarter_date_ranges.items():
-                if card.archive_date.date() >= quarter_dates[0] and card.archive_date.date() <= quarter_dates[1]:
-                    if quarter in archived_cards.keys():
-                       # print card.title, card.archive_date.date()
-                        archived_cards[quarter].append(card)
-                    else:
-                       # print card.title, card.archive_date.date()
-                        archived_cards[quarter] = [card]
+            quarter = self.__get_quarter(card.archive_date.month, card.archive_date.day)
+            cards_in_quarter = archived_cards.get(quarter, [])
+            cards_in_quarter.append(card)
+            archived_cards.update({quarter: cards_in_quarter})
+            # for quarter, quarter_dates in s.quarter_date_ranges.items():
+            #     if card.archive_date.date() >= quarter_dates[0] and card.archive_date.date() <= quarter_dates[1]:
+            #         if quarter in archived_cards.keys():
+            #            # print card.title, card.archive_date.date()
+            #             archived_cards[quarter].append(card)
+            #         else:
+            #            # print card.title, card.archive_date.date()
+            #             archived_cards[quarter] = [card]
 
         return archived_cards
 
@@ -152,15 +164,15 @@ class CardController(object):
                 'total_completed_tasks': sum(wip_card.completed_tasks
                                              for wip_card in wip_cards_list[1])}
 
-    def wip_days(self, wip_cards_list):
-        old_cards_list = []
-
-        today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-        for card in wip_cards_list[1]:
-            card.wip_days = today - card.last_move_date
-            old_cards_list.append(card)
-
-        return old_cards_list
+    # def wip_days(self, wip_cards_list):
+    #     old_cards_list = []
+    #
+    #     today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
+    #     for card in wip_cards_list[1]:
+    #         card.wip_days = today - card.last_move_date
+    #         old_cards_list.append(card)
+    #
+    #     return old_cards_list
 
 if __name__ == "__main__":
     wrapper = LeanKitWrapper()
