@@ -2,6 +2,7 @@
 
 import slumber
 import settings as s
+import requests
 from datetime import datetime as dt
 from isoweek import Week
 
@@ -31,27 +32,6 @@ class Card(object):
     def __hash__(self):
         return hash(self.id)
 
-
-class HistoryCard(object):
-    def __init__(self, history_dict):
-        for event in history_dict:
-            if event['Type'] == 'CardCreationEventDTO':
-                self.creation_date = dt.datetime.strptime(event['DateTime'], '%m/%d/%Y at %H:%M:%S %p')
-                self.creation_lane_title = event['ToLaneTitle']
-            if event['Type'] == 'CardBlockedEventDTO':
-                if event['IsBlocked']:
-                    self.blocked_start_date = event['DateTime']
-                    self.block_reason = event['Comment']
-                elif not event['IsBLocked']:
-                    self.blocked_finish_date = event['DateTime']
-            if event['Type'] == 'CardMoveEventDTO':
-                self.current_lane_title = event['FromLaneTitle']
-                self.next_lane_title = event['ToLaneTitle']
-                self.move_date = event['DateTime']
-
-
-
-
 class LeanKitWrapper(object):
     def __init__(self):
         self.api = slumber.API(s.api_url, auth=(s.user, s.pwd))
@@ -59,24 +39,28 @@ class LeanKitWrapper(object):
     def __fetch_cards_list(self, lk_cards_list):
         cards_list = []
         for lk_card in lk_cards_list:
-            reply_answer = self.api.board(s.j1_board).getcard(lk_card["Id"]).get()
+            reply_answer = self.api.board(s.board_id).getcard(lk_card["Id"]).get()
             if reply_answer["ReplyCode"] == 200:
                 cards_list.append(self.__create_card(reply_answer["ReplyData"][0]))
 
         return cards_list
 
     def __fetch_recent_archived_cards_list(self):
-        lk_reply_data_archive = self.api.board(s.j1_board).archive.get()["ReplyData"][0][0]["Lane"]["Cards"]
+        lk_reply_data_archive = self.api.board(s.board_id).archive.get()["ReplyData"][0][0]["Lane"]["Cards"]
         return self.__fetch_cards_list(lk_reply_data_archive)
 
     def __fetch_old_archived_cards_list(self):
-        lk_reply_data_old_archive = self.api.board(s.j1_board).searchcards. \
-            post(s.search_options_for_old_archive)["ReplyData"][0]['Results']
-        print len(lk_reply_data_old_archive)
-        return self.__fetch_cards_list(lk_reply_data_old_archive)
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        resource_uri = "https://produtos-globocom.leankit.com/kanban/api/board/178068433/searchcards"
+        old_archived_cards = requests.post(resource_uri,
+                                           data=s.search_options_for_old_archive,
+                                           headers=headers,
+                                           auth=(s.user, s.pwd))
+        old_arch_cards_list = old_archived_cards.json()
+        return self.__fetch_cards_list(old_arch_cards_list["ReplyData"][0]["Results"])
 
     def __fetch_delivered_cards_list(self):
-        lk_reply_data_delivered = self.api.boards(s.j1_board).get()['ReplyData'][0]['Lanes']
+        lk_reply_data_delivered = self.api.boards(s.board_id).get()['ReplyData'][0]['Lanes']
         delivered_cards = []
         #print lk_reply_data_delivered
         for lane in lk_reply_data_delivered:
@@ -134,7 +118,7 @@ class LeanKitWrapper(object):
         return list(set(recent_archive) | set(old_archive) | set(delivered_cards))
 
     def get_wip_cards(self):
-        reply_data = self.api.boards(s.j1_board).get()["ReplyData"][0]
+        reply_data = self.api.boards(s.board_id).get()["ReplyData"][0]
 
         #backlog_cards_list = self.__fetch_backlog_cards_list(reply_data)
         #development_cards_list = self.__fetch_development_cards_list(reply_data)

@@ -229,6 +229,25 @@ def build_wip_dial(wip_cards):
     #total_wip = wip_counts['wip'] + wip_counts['backlog'] + wip_counts['to_prod']
     update.pushNumber("current_wip_dial", len(wip_cards))
 
+def build_queue_sizes_bar_chart(wip_cards):
+    queues = {}
+    for card in wip_cards:
+        if card.lane_title == "Current Sprint Backlog":
+            queues.update({"Sprint Backlog": queues.get("Sprint Backlog", 0) + 1})
+        elif card.lane_title == "Dev. Done" or card.lane_title == "TO PROD":
+            queues.update({card.lane_title: queues.get(card.lane_title, 0) + 1})
+    chart = []
+    for key in queues.keys():
+        chart.append({"name": key, "value": queues[key], "color": "purple"})
+    print "Submitting a JSON"
+    print chart
+    points_json = json.dumps(chart)
+    c.setopt(c.POSTFIELDS, '{"accessKey": "yRtMi1VBjechqkFIpdTiEOzoGhkSu2lZ",' +
+             '"streamName": "queue_sizes_bar", "point": ' +
+             '{"chart": ' + points_json + '}}')
+    c.perform()
+
+
 
 if __name__ == "__main__":
     # wrapper = LeanKitWrapper()
@@ -240,8 +259,10 @@ if __name__ == "__main__":
     card_ctrl = CardController(archive)
 
     wip_cards_list = wrapper.get_wip_cards()
+    print wip_cards_list
     build_wip_dial(wip_cards_list)
     build_table_wips(wip_cards_list)
+    build_queue_sizes_bar_chart(wip_cards_list)
 
     cards_dict = card_ctrl.archived_cards_per_week_last_six_weeks()
     #cards_count = build_archived_by_week_bar_chart(cards_dict, "delivered_chart", "purple")
