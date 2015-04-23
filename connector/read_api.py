@@ -92,6 +92,29 @@ class LeanKitWrapper(object):
 
         return cards_list
 
+    def get_cycle_time(self, card):
+        r = requests.get("http://produtos-globocom.leankitkanban.com/Kanban/API/Card/History/" +\
+                         str(s.board_id) + "/" + str(card["Id"]), auth=("rodrigo.abreu@corp.globo.com", "reminha"))
+        hist_data = r.json()['ReplyData'][0]
+        init_date = end_date = ""
+        for data in hist_data:
+            if (data["Type"] == "CardMoveEventDTO" or data["Type"] == "CardCreationEventDTO") \
+                    and (data['ToLaneId'] == 178341443 or data['ToLaneId'] == 178341444):
+                init_date = dt.strptime(data['DateTime'], '%m/%d/%Y at %I:%M:%S %p')
+            else:
+                init_date = dt.strptime(card["CreateDate"], "%m/%d/%Y")
+            if data["Type"] == "CardMoveEventDTO" and \
+                    (data['ToLaneId'] == 180997232 or data['ToLaneId'] == 180997231):
+               end_date = dt.strptime(data['DateTime'], '%m/%d/%Y at %I:%M:%S %p')
+            elif card["DateArchived"] is not None:
+                end_date = dt.strptime(card["DateArchived"], "%m/%d/%Y")
+
+        if end_date:
+            cycle = (end_date - init_date).days
+            return cycle if cycle > 0 else 1
+        else:
+            return None
+
     def __create_card(self, lk_card):
         return Card(id=lk_card["Id"],
                     title=lk_card["Title"],
@@ -106,7 +129,8 @@ class LeanKitWrapper(object):
                     value=lk_card["ClassOfServiceTitle"],
                     tags=lk_card["Tags"].split(","),
                     completed_tasks=lk_card["TaskBoardCompletedCardCount"],
-                    total_tasks=lk_card["TaskBoardTotalCards"])
+                    total_tasks=lk_card["TaskBoardTotalCards"],
+                    cycle_time=self.get_cycle_time(lk_card))
 
     def get_archived_cards(self):
         recent_archive = self.__fetch_recent_archived_cards_list()

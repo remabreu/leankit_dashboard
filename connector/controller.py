@@ -177,9 +177,13 @@ class CardController(object):
 if __name__ == "__main__":
     wrapper = LeanKitWrapper()
     archive = wrapper.get_archived_cards()
-    controller = CardController(archive)
+    for a in archive:
+        print a.title
+        print a.cycle_time
+        print
+     #controller = CardController(archive)
     #print controller.archived_cards_per_week_last_six_weeks()
-    print controller.archived_cards_per_week_current_quarter()
+     #print controller.archived_cards_per_week_current_quarter()
 
     #wip = wrapper.fetch_wip_cards()
     #print CardController(None).wip_card_count(wrapper.backlog_cards_list,
