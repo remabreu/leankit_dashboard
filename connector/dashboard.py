@@ -156,12 +156,12 @@ def build_leaderboard_old_wips(old_cards_list):
 
 
 def build_table_wips(cards_list):
-    header_list = ['Card', 'Epic', 'Days in Lane']
+    header_list = ['Card', 'Epic', 'Days In Process']
     rows_list = []
     for card in cards_list:
         if card.lane_title in s.wip_dev:
             duration = datetime.date.today() - card.last_move_date.date()
-            row = [card.title, card.epic, str(duration.days) + " / " + card.lane_title]
+            row = [card.title, card.epic, str(duration.days)]
             rows_list.append(row)
 
     update.pushTable("wip_days_table", header_list, rows_list)
@@ -247,6 +247,16 @@ def build_queue_sizes_bar_chart(wip_cards):
              '{"chart": ' + points_json + '}}')
     c.perform()
 
+def build_target_effort_pie_chart(no_tagert, target):
+    efforts = [{"name": "No Target", "value": no_tagert},
+               {"name": "Target", "value": target}]
+    update.pushLeaderboard("effort_pie", efforts)
+
+def build_average_cycle_time_number(cycle_time):
+    update.pushNumber("average_cycle_time", cycle_time)
+
+def build_instant_tp_number(wip, cycle_time):
+    update.pushNumber("instant_tp", wip/cycle_time)
 
 
 if __name__ == "__main__":
@@ -258,11 +268,19 @@ if __name__ == "__main__":
     archive = wrapper.get_archived_cards()
     card_ctrl = CardController(archive)
 
+    no_target, target = card_ctrl.targets_effort(archive)
+    build_target_effort_pie_chart(no_target, target)
+    avg_cycle_time = card_ctrl.average_cycle_time(archive)
+    build_average_cycle_time_number(avg_cycle_time)
+
     wip_cards_list = wrapper.get_wip_cards()
-    print wip_cards_list
+    #print wip_cards_list
     build_wip_dial(wip_cards_list)
     build_table_wips(wip_cards_list)
     build_queue_sizes_bar_chart(wip_cards_list)
+    build_instant_tp_number(len(wip_cards_list),avg_cycle_time)
+
+
 
     cards_dict = card_ctrl.archived_cards_per_week_last_six_weeks()
     #cards_count = build_archived_by_week_bar_chart(cards_dict, "delivered_chart", "purple")

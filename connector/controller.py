@@ -164,15 +164,20 @@ class CardController(object):
                 'total_completed_tasks': sum(wip_card.completed_tasks
                                              for wip_card in wip_cards_list[1])}
 
-    # def wip_days(self, wip_cards_list):
-    #     old_cards_list = []
-    #
-    #     today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-    #     for card in wip_cards_list[1]:
-    #         card.wip_days = today - card.last_move_date
-    #         old_cards_list.append(card)
-    #
-    #     return old_cards_list
+    def targets_effort(self, archived_cards):
+        no_target_effort = target_effort = 0
+        for card in archived_cards:
+            if "target_q2.2015" in card.tags:
+                target_effort += card.cycle_time
+            elif "no_target_q2.2015" in card.tags:
+                no_target_effort += card.cycle_time
+
+        print "EFFORTS", no_target_effort, target_effort
+        return no_target_effort, target_effort
+
+    def average_cycle_time(self, archived_cards):
+        print sum([card.cycle_time for card in archived_cards])/len(archived_cards)
+        return sum([card.cycle_time for card in archived_cards])/len(archived_cards)
 
 if __name__ == "__main__":
     wrapper = LeanKitWrapper()
