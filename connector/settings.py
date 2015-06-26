@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import simplejson as json
 import datetime
 from isoweek import Week
 
-board_id = "178068433"
+board_id = "196166479"
 api_url = "http://produtos-globocom.leankit.com/kanban/api/"
 user = "rodrigo.abreu@corp.globo.com"
 pwd = "reminha"
@@ -16,9 +15,9 @@ wip_dev = ["In Process", "Dev.Done", "Team Validation"]
 work_wip = ['Current Sprint Backlog', 'In Process', 'Dev. Done', 'Team Validation', 'TO PROD', 'Janela']
 development_lane = '127351620'
 
-search_options_for_old_archive = json.dumps(json.JSONDecoder().decode('{"searchOptions":{"SearchTerm":"",\
-        "SearchInOldArchive":true,\
-        "Page":1, "MaxResults":25,"OrderBy":"CreatedOn","SortOrder":0}}'))
+#search_options_for_old_archive = json.dumps(json.JSONDecoder().decode('{"searchOptions":{"SearchTerm":"",\
+#        "SearchInOldArchive":true,\
+#        "Page":1, "MaxResults":20,"OrderBy":"CreatedOn","SortOrder":0}}'))
 
 # '{"searchOptions":{"SearchTerm":"",\
 #         "SearchInBacklog":false,\

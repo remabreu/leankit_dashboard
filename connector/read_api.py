@@ -5,6 +5,7 @@ import settings as s
 import requests
 from datetime import datetime as dt
 from isoweek import Week
+import simplejson as json
 
 
 class Card(object):
@@ -39,39 +40,45 @@ class LeanKitWrapper(object):
     def __fetch_cards_list(self, lk_cards_list):
         cards_list = []
         for lk_card in lk_cards_list:
-            reply_answer = self.api.board(s.board_id).getcard(lk_card["Id"]).get()
-            if reply_answer["ReplyCode"] == 200:
-                cards_list.append(self.__create_card(reply_answer["ReplyData"][0]))
+            if lk_card["Index"] is not "1000":
+                reply_answer = self.api.board(s.board_id).getcard(lk_card["Id"]).get()
+                if reply_answer["ReplyCode"] == 200:
+                    cards_list.append(self.__create_card(reply_answer["ReplyData"][0]))
 
         return cards_list
 
-    def __fetch_recent_archived_cards_list(self):
-        lk_reply_data_archive = self.api.board(s.board_id).archive.get()["ReplyData"][0][0]["Lane"]["Cards"]
+    def __fetch_recent_archived_cards_list(self, team):
+        lk_reply_data_archive = self.api.board(s.board_id).archive.get()["ReplyData"][0][0]["ChildLanes"][team]['Lane']['Cards']
+        #[0][0]["Lane"]["Cards"]
         return self.__fetch_cards_list(lk_reply_data_archive)
 
-    def __fetch_old_archived_cards_list(self):
+    def __build_search_options_for_old_archive(self, page):
+        return json.dumps(json.JSONDecoder().decode('{"searchOptions":{"SearchTerm":"",\
+        "SearchInOldArchive":true,\
+        "Page":' + str(page) + ',"MaxResults":20,"OrderBy":"CreatedOn","SortOrder":0}}'))
+
+    def __search_old_archives(self, page):
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        resource_uri = "https://produtos-globocom.leankit.com/kanban/api/board/178068433/searchcards"
+        resource_uri = "https://produtos-globocom.leankit.com/kanban/api/board/" + s.board_id + "/searchcards"
         old_archived_cards = requests.post(resource_uri,
-                                           data=s.search_options_for_old_archive,
+                                           data=self.__build_search_options_for_old_archive(page),
                                            headers=headers,
                                            auth=(s.user, s.pwd))
-        old_arch_cards_list = old_archived_cards.json()
-        return self.__fetch_cards_list(old_arch_cards_list["ReplyData"][0]["Results"])
+        return old_archived_cards.json()
 
-    def __fetch_delivered_cards_list(self):
-        lk_reply_data_delivered = self.api.boards(s.board_id).get()['ReplyData'][0]['Lanes']
-        delivered_cards = []
-        #print lk_reply_data_delivered
-        for lane in lk_reply_data_delivered:
-            if lane["Title"] == "BETA" or lane["Title"] == "PROD":
-                delivered_cards += self.__fetch_cards_list(lane["Cards"])
-        return delivered_cards
+    def __fetch_old_archived_cards_list(self):
+        old_arch_cards_list = self.__search_old_archives(1)
 
-    def __fetch_backlog_cards_list(self, reply_data):
-        for backlog_lane in reply_data['Backlog']:
-            if backlog_lane['Title'] == 'Next':
-                return backlog_lane['Cards']
+        total_results = int(old_arch_cards_list["ReplyData"][0]['TotalResults'])
+        pages, remainder = divmod(total_results, 20)
+        last_page = 1 if remainder > 0 else 0
+        old_archive = self.__fetch_cards_list(old_arch_cards_list["ReplyData"][0]["Results"])
+
+        for page in range(2, pages + last_page + 1):
+            old_archive_page = self.__search_old_archives(page)
+            old_archive.extend(self.__fetch_cards_list(old_archive_pages["ReplyData"][0]["Results"]))
+
+        return old_archive
 
     def __fetch_development_cards_list(self, reply_data):
         dev_card_list = []
@@ -80,17 +87,6 @@ class LeanKitWrapper(object):
                 dev_card_list += lane['Cards']
 
         return self.__fetch_cards_list(dev_card_list)
-
-    def __fetch_deploy_cards_list(self, reply_data):
-        cards_list = []
-        for lane in reply_data['Lanes']:
-            if lane['Title'] == 'TO PROD' or \
-                            lane['Title'] == u'Validação' or \
-                            lane['Title'] == 'Waiting for Deploy':
-                print lane['Title'], len(lane['Cards'])
-                cards_list += lane['Cards']
-
-        return cards_list
 
     def get_cycle_time(self, card):
         r = requests.get("http://produtos-globocom.leankitkanban.com/Kanban/API/Card/History/" +\
@@ -116,37 +112,40 @@ class LeanKitWrapper(object):
             return None
 
     def __create_card(self, lk_card):
-        return Card(id=lk_card["Id"],
-                    title=lk_card["Title"],
-                    lane_title=lk_card["LaneTitle"],
-                    epic=lk_card["ExternalCardID"],
-                    create_date=dt.strptime(lk_card["CreateDate"], "%m/%d/%Y"),
-                    archive_date=dt.strptime(lk_card["DateArchived"], "%m/%d/%Y")
-                    if lk_card["DateArchived"] else None,
-                    last_move_date=dt.strptime(lk_card["LastMove"].split(" ")[0],
-                                               "%m/%d/%Y"),
-                    card_type=lk_card["TypeName"],
-                    value=lk_card["ClassOfServiceTitle"],
-                    tags=lk_card["Tags"].split(","),
-                    completed_tasks=lk_card["TaskBoardCompletedCardCount"],
-                    total_tasks=lk_card["TaskBoardTotalCards"],
-                    cycle_time=self.get_cycle_time(lk_card))
+            return Card(id=lk_card["Id"],
+                        title=lk_card["Title"],
+                        lane_title=lk_card["LaneTitle"],
+                        epic=lk_card["ExternalCardID"],
+                        create_date=dt.strptime(lk_card["CreateDate"], "%m/%d/%Y"),
+                        archive_date=dt.strptime(lk_card["DateArchived"], "%m/%d/%Y")
+                        if lk_card["DateArchived"] else None,
+                        last_move_date=dt.strptime(lk_card["LastMove"].split(" ")[0],
+                                                   "%m/%d/%Y"),
+                        card_type=lk_card["TypeName"],
+                        value=lk_card["ClassOfServiceTitle"],
+                        tags=lk_card["Tags"].split(",") if lk_card["Tags"] else None,
+                        completed_tasks=lk_card["TaskBoardCompletedCardCount"],
+                        total_tasks=lk_card["TaskBoardTotalCards"],
+                        cycle_time=self.get_cycle_time(lk_card),
+                        team=lk_card["ClassOfServiceTitle"])
 
     def get_archived_cards(self):
-        recent_archive = self.__fetch_recent_archived_cards_list()
+        recent_archive = self.__fetch_recent_archived_cards_list(1) #ESP1
+        recent_archive.extend(self.__fetch_recent_archived_cards_list(2)) #ESP2
         old_archive = self.__fetch_old_archived_cards_list()
-        # for card in old_archive:
-        #     print card.lane_title, card.title
-        delivered_cards = self.__fetch_delivered_cards_list()
-        print len(recent_archive), len(old_archive), len(delivered_cards)
-        return list(set(recent_archive) | set(old_archive) | set(delivered_cards))
+        #delivered_cards = self.__fetch_delivered_cards_list()
+        print len(recent_archive), len(old_archive)
+        return recent_archive + old_archive
+        #return list(set(recent_archive) | set(old_archive))
 
     def get_wip_cards(self):
         reply_data = self.api.boards(s.board_id).get()["ReplyData"][0]
 
-        #backlog_cards_list = self.__fetch_backlog_cards_list(reply_data)
-        #development_cards_list = self.__fetch_development_cards_list(reply_data)
-        #deploy_cards_list = self.__fetch_deploy_cards_list(reply_data)
-
-        #return [backlog_cards_list, development_cards_list, deploy_cards_list]
         return self.__fetch_development_cards_list(reply_data)
+
+if __name__ == "__main__":
+    wrapper = LeanKitWrapper()
+    archive = wrapper.get_archived_cards()
+
+    for i, card in enumerate(archive):
+        print i, card.title, card.team
