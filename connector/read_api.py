@@ -75,7 +75,7 @@ class LeanKitWrapper(object):
         old_archive = self.__fetch_cards_list(old_arch_cards_list["ReplyData"][0]["Results"])
 
         for page in range(2, pages + last_page + 1):
-            old_archive_page = self.__search_old_archives(page)
+            old_archive_pages = self.__search_old_archives(page)
             old_archive.extend(self.__fetch_cards_list(old_archive_pages["ReplyData"][0]["Results"]))
 
         return old_archive

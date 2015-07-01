@@ -42,4 +42,9 @@ quarter_week_numbers = iter([week_no(2014, 9, 1), week_no(2014, 12, 1),
                             week_no(2015, 3, 1), week_no(2015, 6, 1),
                             week_no(2015, 9, 1)])
 
-quarters = [(3,1,"Q2.2015"), (6,1,"Q3.2015"), (9,1,"Q4.2015"), (12, 1, "Q1.2016")]
+#quarters = [(3,1,"Q2.2015"), (6,1,"Q3.2015"), (9,1,"Q4.2015"), (12, 1, "Q1.2016")]
+
+quarters = {"Q2.2015": (datetime.datetime(2015, 1, 3), datetime.datetime(2015, 5, 31)),
+            "Q3.2015": (datetime.datetime(2015, 6, 1), datetime.datetime(2015, 8, 31)),
+            "Q4.2015": (datetime.datetime(2015, 9, 1), datetime.datetime(2015, 8, 31)),
+            "Q1.2016": (datetime.datetime(2015, 12, 1), datetime.datetime(2016, 2, 29))}
