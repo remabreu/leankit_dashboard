@@ -12,7 +12,7 @@ wip = ["Analise", "Doing", "Dev. Done", "Fixing", "Waiting for Deploy",
 wip_dev = ["In Process", "Dev.Done", "Team Validation"]
 #work_wip = ['Analise', 'Doing', 'Dev. Done', 'Fixing', 'Validation',
 #            'Validation Done', 'Fixing', 'Fixing Done']
-work_wip = ['Current Sprint Backlog', 'In Process', 'Dev. Done', 'Team Validation', 'TO PROD', 'Janela']
+work_wip = ["Analysis", "In Progress", "Done", "Validation", "To Prod", "Deploy"]
 development_lane = '127351620'
 
 #search_options_for_old_archive = json.dumps(json.JSONDecoder().decode('{"searchOptions":{"SearchTerm":"",\

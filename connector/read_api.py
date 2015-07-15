@@ -6,6 +6,7 @@ import requests
 from datetime import datetime as dt
 from isoweek import Week
 import simplejson as json
+from read_history import LkStateMachine
 
 
 class Card(object):
@@ -43,7 +44,9 @@ class LeanKitWrapper(object):
             if lk_card["Index"] is not "1000":
                 reply_answer = self.api.board(s.board_id).getcard(lk_card["Id"]).get()
                 if reply_answer["ReplyCode"] == 200:
-                    cards_list.append(self.__create_card(reply_answer["ReplyData"][0]))
+                    card = self.__create_card(reply_answer["ReplyData"][0])
+                    self.set_history_data(card)
+                    cards_list.append(card)
 
         return cards_list
 
@@ -88,28 +91,17 @@ class LeanKitWrapper(object):
 
         return self.__fetch_cards_list(dev_card_list)
 
-    def get_cycle_time(self, card):
+    def set_history_data(self, card):
         r = requests.get("http://produtos-globocom.leankitkanban.com/Kanban/API/Card/History/" +\
-                         str(s.board_id) + "/" + str(card["Id"]), auth=("rodrigo.abreu@corp.globo.com", "reminha"))
+                         str(s.board_id) + "/" + str(card.id), auth=("rodrigo.abreu@corp.globo.com", "reminha"))
         hist_data = r.json()['ReplyData'][0]
-        init_date = end_date = ""
-        for data in hist_data:
-            if (data["Type"] == "CardMoveEventDTO" or data["Type"] == "CardCreationEventDTO") \
-                    and (data['ToLaneId'] == 178341443 or data['ToLaneId'] == 178341444):
-                init_date = dt.strptime(data['DateTime'], '%m/%d/%Y at %I:%M:%S %p')
-            else:
-                init_date = dt.strptime(card["CreateDate"], "%m/%d/%Y")
-            if data["Type"] == "CardMoveEventDTO" and \
-                    (data['ToLaneId'] == 180997232 or data['ToLaneId'] == 180997231):
-               end_date = dt.strptime(data['DateTime'], '%m/%d/%Y at %I:%M:%S %p')
-            elif card["DateArchived"] is not None:
-                end_date = dt.strptime(card["DateArchived"], "%m/%d/%Y")
-
-        if end_date:
-            cycle = (end_date - init_date).days
-            return cycle if cycle > 0 else 1
-        else:
-            return None
+        lk_state_machine = LkStateMachine(hist_data)
+        card.backlog_duration = lk_state_machine.backlog_duration
+        card.development_duration = lk_state_machine.doing_duration
+        card.dev_queue_duration = lk_state_machine.waiting_duration
+        card.cycle_time = lk_state_machine.cycle_time
+        card.blocked_duration = lk_state_machine.block_duration
+        card.blocked_reasons = lk_state_machine.block_card_events.values()
 
     def __create_card(self, lk_card):
             return Card(id=lk_card["Id"],
@@ -122,11 +114,10 @@ class LeanKitWrapper(object):
                         last_move_date=dt.strptime(lk_card["LastMove"].split(" ")[0],
                                                    "%m/%d/%Y"),
                         card_type=lk_card["TypeName"],
-                        value=lk_card["ClassOfServiceTitle"],
                         tags=lk_card["Tags"].split(",") if lk_card["Tags"] else None,
                         completed_tasks=lk_card["TaskBoardCompletedCardCount"],
                         total_tasks=lk_card["TaskBoardTotalCards"],
-                        cycle_time=self.get_cycle_time(lk_card),
+                        #cycle_time=self.get_cycle_time(lk_card),
                         team=lk_card["ClassOfServiceTitle"])
 
     def get_archived_cards(self):
@@ -147,5 +138,11 @@ if __name__ == "__main__":
     wrapper = LeanKitWrapper()
     archive = wrapper.get_archived_cards()
 
+    #wip = wrapper.get_wip_cards()
+
     for i, card in enumerate(archive):
-        print i, card.title, card.team
+        if card.blocked_duration:
+            print i, card.id, card.team, card.title, card.blocked_duration, card.blocked_reasons
+        # print i, card.id, card.title, card.backlog_duration, card.development_duration,\
+        #         card.dev_queue_duration, card.cycle_time
+
