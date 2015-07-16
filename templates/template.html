@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <title>{{ title }}</title>
+  <meta name="description" content="{{ description }}" />
+</head>
+
+<body>
+
+<div id="content">
+    <ul>
+    {% for week, cards_list in cards_by_week.iteritems() %}
+    <li> {{ week }} ({{ week.monday() }} to {{ week.friday() }})</li>
+        <ul>
+            {% for card in cards_list %}
+            <li>{{ card.title }} {{ card.team }}</li>
+            {%- endfor -%}
+        </ul>
+    {%- endfor -%}
+    </ul>
+</div>
+
+</body>
+</html>

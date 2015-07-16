@@ -125,7 +125,8 @@ class LeanKitWrapper(object):
         recent_archive.extend(self.__fetch_recent_archived_cards_list(2)) #ESP2
         old_archive = self.__fetch_old_archived_cards_list()
         #delivered_cards = self.__fetch_delivered_cards_list()
-        print len(recent_archive), len(old_archive)
+        #print len(recent_archive), len(old_archive)
+        #return recent_archive
         return recent_archive + old_archive
         #return list(set(recent_archive) | set(old_archive))
 
