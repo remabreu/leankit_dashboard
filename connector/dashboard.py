@@ -226,7 +226,7 @@ if __name__ == "__main__":
     wrapper = LeanKitWrapper()
     archive = wrapper.get_archived_cards()
     wip = wrapper.get_wip_cards()
-    cac = CardArchiveController(archive, wip, "ESP2")
+    cac = CardArchiveController(archive, wip, "ESP1")
 
     archived_cards_by_week = cac.group_cards_by_week()
     archived_in_six_weeks = cac.filter_cards_by_last_6_weeks(archived_cards_by_week)

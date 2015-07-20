@@ -15,6 +15,6 @@ archived_cards_by_week = cac.group_cards_by_week()
 print archived_cards_by_week
 env = Environment(loader=PackageLoader('connector', '../templates'))
 template = env.get_template('template.html')
-f = os.path.join(os.getcwd(), '../templates/iteration_cards.html')
+f = os.path.join(os.getcwd(), '../web/esp1/relatorio_semanal.html')
 template.stream(cards_by_week=archived_cards_by_week).dump(f, encoding="UTF-8")
 #print template.render()
