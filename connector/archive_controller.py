@@ -61,27 +61,18 @@ class CardArchiveController(object):
 
     def group_cards_by_quarter_by_week(self, cards_by_week_dict):
         cards_by_quarter_by_week = {}
-        quarter_weeks = []
         for week in cards_by_week_dict.keys():
-            #quarter = self.__get_quarter(dt.datetime.combine(week.monday(), dt.datetime.min.time()))
             for quarter, quarter_dates in s.quarters.iteritems():
                 if quarter_dates[0].date() < week.monday() < quarter_dates[1].date():
-                    #if cards_by_quarter_by_week[quarter]:
-                        #quarter_weeks.append(cards_by_week_dict[week])
-                    quarter_weeks.append({week: cards_by_week_dict[week]})
-                    cards_by_quarter_by_week.update({quarter: quarter_weeks})
-                    #else:
-                        #cards_by_quarter_by_week[quarter] =
-
-            #cards_by_quarter_by_week.update({quarter: {week: cards_by_week_dict[week]}})
-            #for quarter, dates in s.quarters.iteritems():
-            #    if dates[0].date() < week.monday() < dates[1].date():
-                    #cards_by_quarter_by_week.update({quarter: {week: cards_by_week_dict[week]}})
+                    if cards_by_quarter_by_week.get(quarter, False):
+                        aux = cards_by_quarter_by_week[quarter]
+                        aux.append({week: cards_by_week_dict[week]})
+                        cards_by_quarter_by_week.update({quarter: aux})
+                    else:
+                        cards_by_quarter_by_week[quarter] = [{week: cards_by_week_dict[week]}]
 
         return collections.OrderedDict(sorted(cards_by_quarter_by_week.items(), key=lambda t: t[0]))
 
-
-    #cards grouped by week in the current quarter
     def filter_cards_by_current_quarter(self, cards_by_week_dict):
 
         current_quarter_dates_range = self.__get_current_quarter_dates_range()
@@ -236,7 +227,7 @@ if __name__ == "__main__":
     #     print len(archived_in_six_weeks[week])
     #     for card in archived_in_six_weeks[week]:
     #         print "%s, %s, %s, %s, %s" % (week, card.epic, card.title, card.archive_date, card.card_type)
-    #         #print week, card.epic, card.title, card.archive_date, card.card_type
+            #print week, card.epic, card.title, card.archive_date, card.card_type
 
 
 

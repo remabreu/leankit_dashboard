@@ -11,14 +11,21 @@
 
 <div id="content">
     <ul>
-    {% for week, cards_list in cards_by_week.iteritems() %}
-    <li> {{ week }} ({{ week.monday() }} to {{ week.friday() }})</li>
+        {% for quarter, week_list in archived_by_quarter_by_week.iteritems() %}
+        <li>{{ quarter }} <b>{{ archived_by_quarter[quarter]|length }}</b></li>
         <ul>
-            {% for card in cards_list %}
-            <li>{{ card.title }} {{ card.team }}</li>
+            {% for week_dict in  week_list %}
+                {% for week, cards_list in week_dict.iteritems() %}
+                <li> {{ week }} ({{ week.monday() }} to {{ week.friday() }}) <b>{{ cards_list|length }}</b></li>
+                <ul>
+                    {% for card in cards_list %}
+                    <li>{{ card.title }} {{ card.team }}</li>
+                    {%- endfor -%}
+                </ul>
+                {%- endfor -%}
             {%- endfor -%}
         </ul>
-    {%- endfor -%}
+        {%- endfor -%}
     </ul>
 </div>
 
