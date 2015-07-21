@@ -192,9 +192,9 @@ if __name__ == "__main__":
     archived_in_quarter = cac.filter_cards_by_current_quarter(archived_cards_by_week)
     archived_in_six_weeks = cac.filter_cards_by_last_6_weeks(archived_cards_by_week)
 
-    for quarter, week_dict in archived_by_quarter_by_week.iteritems():
+    for quarter, week_list in archived_by_quarter_by_week.iteritems():
         print quarter
-        for week_ditc in week_dict:
+        for week_dict in week_list:
             for week, cards in week_dict.iteritems():
                 print week
                 for card in cards:
